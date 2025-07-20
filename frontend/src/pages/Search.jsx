@@ -7,11 +7,13 @@ export default function Search() {
   const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get("q") || "";
 
+  const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+
   async function fetchCards() {
     if (!query) return;
     setLoading(true);
     try {
-      const res = await fetch(`http://127.0.0.1:8000/cards?name=${query}`);
+      const res = await fetch(`${API_URL}/cards?name=${query}`);
       const data = await res.json();
       setCards(data.cards || []);
     } catch (err) {
