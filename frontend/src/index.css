@@ -3,9 +3,5 @@
 @tailwind utilities;
 
 body {
-  @apply bg-primary text-white font-sans;
-}
-
-a {
-  @apply text-secondary hover:text-accent transition-colors;
+  @apply bg-gray-900 text-white;
 }
