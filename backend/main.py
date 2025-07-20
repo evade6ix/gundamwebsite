@@ -4,12 +4,15 @@ import requests
 
 app = FastAPI()
 
-# Allow frontend to call backend
+# ✅ Bulletproof CORS for Firefox + any browser
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # 🔥 You can replace "*" with ["https://gundamwebsite.vercel.app"] for strict prod
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],  # 🔥 Expose all headers (fixes weird Firefox behavior)
+    max_age=86400          # 🔥 Cache preflight for 1 day
 )
 
 API_URL = "https://apitcg.com/api/gundam/cards"
