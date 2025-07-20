@@ -45,24 +45,42 @@ def read_root():
     logger.info("📡 GET / called")
     return {"message": "Gundam Backend API is running."}
 
+from fastapi import Request
+
 @app.get("/cards")
-def get_cards(name: str = ""):
+def get_cards(request: Request, name: str = ""):
     logger.info(f"📡 GET /cards called with name={name}")
     try:
         db = get_db()
         query = {}
         if name:
             query["name"] = {"$regex": name, "$options": "i"}
-        cards = list(db.cards.find(query, {"_id": 0}))
+
+        # Pagination params
+        page = int(request.query_params.get("page", 1))
+        limit = int(request.query_params.get("limit", 30))
+        skip = (page - 1) * limit
+
+        total = db.cards.count_documents(query)
+        cards_cursor = db.cards.find(query, {"_id": 0}).skip(skip).limit(limit)
+        cards = list(cards_cursor)
+
         # Flatten image URL
         for card in cards:
             if "images" in card and "small" in card["images"]:
                 card["image_url"] = card["images"]["small"]
-        logger.debug(f"🔎 Found {len(cards)} cards")
-        return {"cards": cards}
+
+        logger.debug(f"🔎 Page {page}/{(total + limit - 1) // limit} - Found {len(cards)} cards")
+        return {
+            "cards": cards,
+            "total": total,
+            "page": page,
+            "totalPages": (total + limit - 1) // limit
+        }
     except Exception as e:
         logger.error(f"❌ Error in /cards: {e}")
         return {"error": str(e)}
+
 
 @app.get("/card/{card_id}")
 def get_card(card_id: str):

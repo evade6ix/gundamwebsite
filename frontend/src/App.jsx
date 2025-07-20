@@ -1,16 +1,14 @@
-import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Search from "./pages/Search";
 import Card from "./pages/Card";
+import Navbar from "./components/Navbar";
 
 export default function App() {
   return (
     <BrowserRouter>
-      <div style={{ padding: "2rem", fontFamily: "sans-serif" }}>
-        <nav style={{ marginBottom: "1rem" }}>
-          <Link to="/" style={{ marginRight: "1rem" }}>Home</Link>
-          <Link to="/search">Search</Link>
-        </nav>
+      <div className="font-sans">
+        <Navbar />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/search" element={<Search />} />
