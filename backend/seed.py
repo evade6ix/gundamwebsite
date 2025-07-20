@@ -1,48 +1,50 @@
 import requests
 from pymongo import MongoClient
+from dotenv import load_dotenv
 import os
 
-API_URL = "https://apitcg.com/api/gundam/cards"
-API_KEY = "b941302cb29e78e0f72f2e944546349d7e65727a5791ea2ee84815d6a1820bce"
+# Load environment variables from .env
+load_dotenv()
 
-MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
+# Configs
+API_TCG_KEY = os.getenv("API_TCG_KEY")
+MONGO_URI = os.getenv("MONGO_URI")
+HEADERS = {"x-api-key": API_TCG_KEY}
+API_URL = "https://apitcg.com/api/gundam/cards"
+
+# MongoDB connection
 client = MongoClient(MONGO_URI)
 db = client["gundam_tcg"]
 cards_collection = db["cards"]
 
-def seed_gundam_cards():
-    headers = {"x-api-key": API_KEY}
+def seed_cards():
     page = 1
+    total_inserted = 0
+
     while True:
+        params = {"page": page, "limit": 100}
         print(f"Fetching page {page}...")
-        params = {"limit": 100, "page": page}
-        response = requests.get(API_URL, headers=headers, params=params)
+        response = requests.get(API_URL, headers=HEADERS, params=params)
+        response.raise_for_status()
         data = response.json()
 
-        if not data.get("data"):
+        cards = data.get("data", [])
+        if not cards:
             break
 
-        for card in data["data"]:
-            doc = {
-                "name": card["name"],
-                "image_url": card["images"]["small"],
-                "rarity": card["rarity"],
-                "color": card["color"],
-                "cardType": card["cardType"],
-                "effect": card.get("effect", ""),
-                "zone": card.get("zone", ""),
-                "trait": card.get("trait", ""),
-                "ap": card.get("ap", ""),
-                "hp": card.get("hp", ""),
-                "sourceTitle": card.get("sourceTitle", ""),
-            }
-            cards_collection.update_one({"name": doc["name"]}, {"$set": doc}, upsert=True)
+        # Insert cards to MongoDB
+        for card in cards:
+            existing = cards_collection.find_one({"id": card["id"]})
+            if not existing:
+                cards_collection.insert_one(card)
+                total_inserted += 1
 
-        if page >= data.get("totalPages", page):
+        print(f"Seeded page {page} with {len(cards)} cards")
+        if page >= data.get("totalPages", 0):
             break
         page += 1
 
-    print("✅ Seeding complete.")
+    print(f"✅ Total cards seeded: {total_inserted}")
 
 if __name__ == "__main__":
-    seed_gundam_cards()
+    seed_cards()

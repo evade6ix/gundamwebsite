@@ -16,7 +16,7 @@ app.add_middleware(
     allow_origins=["*"],  # Replace "*" with ["https://gundamwebsite.vercel.app"] for prod
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],
+    allow_1ders=["*"],
 )
 
 MONGO_URI = os.getenv("MONGO_URI")
@@ -25,20 +25,19 @@ if not MONGO_URI:
 else:
     logger.info(f"✅ MONGO_URI found: {MONGO_URI[:30]}...")
 
+# ✅ Lazy MongoDB connection
 def get_db():
     try:
-        logger.debug("🔌 Connecting to MongoDB...")
-        client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
+        logger.debug("🔌 Initializing MongoDB client (lazy)...")
+        client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000, connect=False)
         db = client["gundam_tcg"]
-        # Test connection
-        client.admin.command('ping')
-        logger.debug("✅ MongoDB connection successful.")
+        logger.debug("✅ MongoDB client initialized (lazy)")
         return db
     except errors.ServerSelectionTimeoutError as e:
         logger.error(f"❌ MongoDB connection failed: {e}")
         raise
     except Exception as e:
-        logger.error(f"❌ Unexpected error connecting to MongoDB: {e}")
+        logger.error(f"❌ Unexpected error initializing MongoDB: {e}")
         raise
 
 @app.get("/")
@@ -75,3 +74,8 @@ def get_card(card_id: str):
     except Exception as e:
         logger.error(f"❌ Error in /card/{card_id}: {e}")
         return {"error": str(e)}
+
+@app.get("/health")
+def health():
+    logger.info("💚 Health check passed")
+    return {"status": "ok"}
