@@ -16,7 +16,7 @@ app.add_middleware(
     allow_origins=["*"],  # Replace "*" with ["https://gundamwebsite.vercel.app"] for prod
     allow_credentials=True,
     allow_methods=["*"],
-    allow_1ders=["*"],
+    allow_headers=["*"],  # 🔥 fixed typo here
 )
 
 MONGO_URI = os.getenv("MONGO_URI")
