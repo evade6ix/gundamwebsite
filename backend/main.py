@@ -54,6 +54,10 @@ def get_cards(name: str = ""):
         if name:
             query["name"] = {"$regex": name, "$options": "i"}
         cards = list(db.cards.find(query, {"_id": 0}))
+        # Flatten image URL
+        for card in cards:
+            if "images" in card and "small" in card["images"]:
+                card["image_url"] = card["images"]["small"]
         logger.debug(f"🔎 Found {len(cards)} cards")
         return {"cards": cards}
     except Exception as e:
