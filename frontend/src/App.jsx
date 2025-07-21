@@ -10,6 +10,7 @@ import ResetPassword from "./pages/ResetPassword";
 import Account from "./pages/Account";
 import CollectionAdd from "./pages/CollectionAdd";
 import DeckBuilder from "./pages/DeckBuilder";
+import DeckDetail from "./pages/DeckDetail";
 
 export default function App() {
   return (
@@ -27,6 +28,7 @@ export default function App() {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/collection/add" element={<CollectionAdd />} />
           <Route path="/decks/new" element={<DeckBuilder />} />
+          <Route path="/decks/:deckName" element={<DeckDetail />} />
         </Routes>
       </div>
     </BrowserRouter>

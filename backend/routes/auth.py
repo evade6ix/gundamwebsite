@@ -193,3 +193,21 @@ def get_user_decks(request: Request):
         raise HTTPException(status_code=404, detail="User not found.")
 
     return {"decks": user.get("decks", [])}
+
+# ✅ NEW: Get a single user deck
+@router.get("/users/decks/{deck_name}")
+def get_single_deck(deck_name: str, request: Request):
+    token = request.headers.get("Authorization", "").replace("Bearer ", "")
+    user_email = verify_token(token)
+    if not user_email:
+        raise HTTPException(status_code=401, detail="Invalid token.")
+
+    user = users_collection.find_one({"email": user_email})
+    if not user or "decks" not in user:
+        raise HTTPException(status_code=404, detail="No decks found.")
+
+    deck = next((d for d in user["decks"] if d["name"] == deck_name), None)
+    if not deck:
+        raise HTTPException(status_code=404, detail="Deck not found.")
+
+    return {"deck": deck}

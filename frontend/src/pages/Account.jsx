@@ -1,78 +1,134 @@
-import { getUserName, getUserFromToken, logout } from "../utils/auth";
-import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { getUserName, getUserFromToken } from "../utils/auth";
 
 export default function Account() {
   const navigate = useNavigate();
   const userEmail = getUserFromToken();
   const userName = getUserName();
   const [decks, setDecks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [hoverCard, setHoverCard] = useState(null);
 
   useEffect(() => {
     if (!userEmail) {
-      navigate("/login"); // force login
+      navigate("/login");
       return;
     }
 
     const fetchDecks = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/decks`, {
-          headers: { Authorization: `Bearer ${token}` },
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/users/decks`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         });
-        const data = await res.json();
         if (res.ok) {
-          setDecks(data.decks);
+          const data = await res.json();
+          setDecks(data.decks || []);
         } else {
-          console.error("Failed to fetch decks:", data.detail);
+          console.error("Failed to fetch decks");
         }
       } catch (err) {
         console.error("Error fetching decks:", err);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchDecks();
   }, [userEmail, navigate]);
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
-  };
-
-  if (!userEmail) return null; // Prevent rendering while redirecting
+  if (!userEmail) return null;
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
-      <div className="bg-white shadow-md rounded-lg p-6 w-full max-w-md text-center">
-        <h1 className="text-3xl font-bold mb-4">Welcome, {userName}!</h1>
-        <p className="mb-4 text-gray-700">Email: {userEmail}</p>
+    <div className="container mx-auto px-4 py-8 relative">
+      <h1 className="text-3xl font-bold mb-6">Welcome, {userName}!</h1>
 
-        <h2 className="text-2xl font-semibold mt-6 mb-2">Your Decks</h2>
-        {decks.length === 0 ? (
-          <p className="text-gray-600">You haven’t saved any decks yet.</p>
-        ) : (
-          <ul className="space-y-3">
-            {decks.map((deck, index) => (
-              <li
-                key={index}
-                className="border rounded p-3 text-left hover:bg-gray-50"
+      <h2 className="text-2xl font-semibold mb-4">Your Decks</h2>
+
+      {loading ? (
+        <p>Loading your decks...</p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Create New Deck */}
+          <Link
+            to="/decks/new"
+            className="border-4 border-dashed border-gray-300 flex flex-col justify-center items-center p-6 rounded-lg hover:border-green-500 hover:shadow-lg transition"
+          >
+            <span className="text-6xl text-gray-400">＋</span>
+            <p className="mt-2 text-lg font-medium text-gray-600">Create New Deck</p>
+          </Link>
+
+          {/* Saved Decks */}
+          {decks.length === 0 ? (
+            <p className="col-span-full text-gray-500">
+              You don’t have any decks yet.
+            </p>
+          ) : (
+            decks.map((deck, idx) => (
+              <Link
+                key={idx}
+                to={`/decks/${encodeURIComponent(deck.name)}`}
+                className="bg-white shadow rounded-lg p-4 hover:shadow-xl transition relative"
               >
-                <h3 className="font-bold text-lg">{deck.name}</h3>
-                <p className="text-sm text-gray-600">
-                  {deck.cards.reduce((sum, c) => sum + c.count, 0)} cards
-                </p>
-              </li>
-            ))}
-          </ul>
-        )}
+                <div className="mb-2">
+                  <h3 className="text-xl font-semibold text-gray-800 truncate">
+                    {deck.name}
+                  </h3>
+                  <p className="text-gray-500 text-sm">
+                    {deck.cards.reduce((sum, c) => sum + c.count, 0)} cards
+                  </p>
+                </div>
+                <div className="flex gap-1 overflow-x-auto">
+                  {deck.cards.slice(0, 5).map((card, i) => (
+                    <div
+                      key={i}
+                      className="relative"
+                      onMouseEnter={() => setHoverCard(card)}
+                      onMouseLeave={() => setHoverCard(null)}
+                    >
+                      <img
+                        src={card.image_url}
+                        alt={card.name}
+                        className="w-16 h-20 object-contain rounded border"
+                      />
 
-        <button
-          onClick={handleLogout}
-          className="mt-6 px-6 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-        >
-          Logout
-        </button>
-      </div>
+                      {/* Hover Popup */}
+                      {hoverCard?.id === card.id && (
+                        <div className="absolute z-50 left-20 top-0 bg-white border rounded shadow-lg p-2 w-64">
+                          <img
+                            src={card.image_url}
+                            alt={card.name}
+                            className="w-full h-auto rounded mb-2"
+                          />
+                          <h4 className="font-bold text-lg">{card.name}</h4>
+                          {card.set_name && (
+                            <p className="text-gray-500 text-sm mb-1">
+                              Set: {card.set_name}
+                            </p>
+                          )}
+                          {card.type && (
+                            <p className="text-gray-600 text-sm">
+                              Type: {card.type}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  {deck.cards.length > 5 && (
+                    <div className="flex justify-center items-center w-16 h-20 bg-gray-100 rounded border text-gray-500">
+                      +{deck.cards.length - 5}
+                    </div>
+                  )}
+                </div>
+              </Link>
+            ))
+          )}
+        </div>
+      )}
     </div>
   );
 }
