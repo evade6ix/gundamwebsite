@@ -76,6 +76,12 @@ export default function Login() {
             Reset it
           </Link>
         </div>
+        <div className="mt-2 text-center text-sm text-gray-600">
+          Don’t have an account?{" "}
+          <Link to="/register" className="text-green-600 hover:underline">
+            Register
+          </Link>
+        </div>
       </form>
     </div>
   );
