@@ -20,8 +20,8 @@ export default function Login() {
     });
     const data = await res.json();
     if (res.ok) {
-      setMessage("✅ Account created! You can now log in.");
-      setTimeout(() => navigate("/account"), 2000);
+      setMessage("✅ Login Successful! Redirecting...");
+      setTimeout(() => navigate("/"), 2000);
     } else {
       setMessage(`❌ ${data.detail || "Failed to register."}`);
     }
