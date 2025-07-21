@@ -1,8 +1,12 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
 export default function DeckBuilder() {
-  const [deckName, setDeckName] = useState("");
+  const navigate = useNavigate();
+  const { deckName } = useParams(); // 👈 get deck name from URL
+  const isEditMode = !!deckName;
+
+  const [name, setName] = useState(deckName || ""); // 👈 prefill name in edit mode
   const [query, setQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -10,7 +14,53 @@ export default function DeckBuilder() {
   const [deck, setDeck] = useState({});
   const [loading, setLoading] = useState(false);
   const [hoverCard, setHoverCard] = useState(null);
-  const navigate = useNavigate();
+
+  // 🚀 Fetch existing deck for editing
+  useEffect(() => {
+    if (isEditMode) {
+      const fetchDeck = async () => {
+        try {
+          const token = localStorage.getItem("token");
+          if (!token) {
+            navigate("/login");
+            return;
+          }
+
+          const res = await fetch(
+            `${import.meta.env.VITE_API_URL}/auth/users/decks/${encodeURIComponent(deckName)}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+
+          if (res.ok) {
+            const data = await res.json();
+
+            // Format deck data into {id: {card}}
+            const formattedDeck = {};
+            data.deck.cards.forEach((card) => {
+              formattedDeck[card.id] = {
+                ...card,
+                count: card.count,
+              };
+            });
+
+            setDeck(formattedDeck);
+            setName(data.deck.name);
+          } else {
+            console.error("Deck not found");
+            navigate("/account");
+          }
+        } catch (err) {
+          console.error("Error loading deck:", err);
+        }
+      };
+
+      fetchDeck();
+    }
+  }, [deckName, isEditMode, navigate]);
 
   const handleSearch = async (e, page = 1) => {
     e?.preventDefault();
@@ -40,7 +90,6 @@ export default function DeckBuilder() {
       alert("❌ Deck limit reached (50 cards).");
       return;
     }
-
     if (currentCount >= 4) {
       alert("❌ Max 4 copies per card.");
       return;
@@ -66,7 +115,7 @@ export default function DeckBuilder() {
   };
 
   const saveDeck = async () => {
-    if (!deckName.trim()) {
+    if (!name.trim()) {
       alert("❌ Enter a deck name.");
       return;
     }
@@ -81,14 +130,20 @@ export default function DeckBuilder() {
       const token = localStorage.getItem("token");
       if (!token) return navigate("/login");
 
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/decks`, {
-        method: "POST",
+      const endpoint = isEditMode
+        ? `${import.meta.env.VITE_API_URL}/auth/users/decks/${encodeURIComponent(deckName)}`
+        : `${import.meta.env.VITE_API_URL}/auth/decks`;
+
+      const method = isEditMode ? "PUT" : "POST";
+
+      const res = await fetch(endpoint, {
+        method,
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          name: deckName.trim(),
+          name: name.trim(),
           cards: Object.values(deck).map((c) => ({
             id: c.id,
             name: c.name,
@@ -98,7 +153,7 @@ export default function DeckBuilder() {
       });
 
       if (res.ok) {
-        alert("✅ Deck saved successfully!");
+        alert(`✅ Deck ${isEditMode ? "updated" : "saved"} successfully!`);
         navigate("/account");
       } else {
         const error = await res.json();
@@ -114,13 +169,15 @@ export default function DeckBuilder() {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-4xl font-bold">New Deck Builder</h1>
+          <h1 className="text-4xl font-bold">
+            {isEditMode ? "Edit Deck" : "New Deck Builder"}
+          </h1>
           <input
             type="text"
             placeholder="Deck Name"
-            value={deckName}
-            onChange={(e) => setDeckName(e.target.value)}
-            className="border rounded px-4 py-2 w-1/3 bg-white text-gray-800"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="border rounded px-4 py-2 w-1/3 bg-white"
           />
         </div>
 
