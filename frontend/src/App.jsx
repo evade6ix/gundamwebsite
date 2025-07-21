@@ -29,6 +29,7 @@ export default function App() {
           <Route path="/collection/add" element={<CollectionAdd />} />
           <Route path="/decks/new" element={<DeckBuilder />} />
           <Route path="/decks/:deckName" element={<DeckDetail />} />
+          <Route path="/decks/edit/:deckName" element={<DeckBuilder />} />
         </Routes>
       </div>
     </BrowserRouter>

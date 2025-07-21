@@ -228,3 +228,37 @@ def get_single_deck(deck_name: str, request: Request):
 
     deck["cards"] = enriched_cards
     return {"deck": deck}
+
+@router.delete("/users/decks/{deck_name}")
+def delete_deck(deck_name: str, request: Request):
+    token = request.headers.get("Authorization", "").replace("Bearer ", "")
+    user_email = verify_token(token)
+    if not user_email:
+        raise HTTPException(status_code=401, detail="Invalid token.")
+
+    result = users_collection.update_one(
+        {"email": user_email},
+        {"$pull": {"decks": {"name": deck_name}}}
+    )
+
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Deck not found or already deleted.")
+
+    return {"msg": f"✅ Deck '{deck_name}' deleted successfully."}
+
+@router.put("/users/decks/{deck_name}")
+def update_deck(deck_name: str, request: Request, deck: dict = Body(...)):
+    token = request.headers.get("Authorization", "").replace("Bearer ", "")
+    user_email = verify_token(token)
+    if not user_email:
+        raise HTTPException(status_code=401, detail="Invalid token.")
+
+    updated = users_collection.update_one(
+        {"email": user_email, "decks.name": deck_name},
+        {"$set": {"decks.$.cards": deck.get("cards", []), "decks.$.name": deck.get("name", deck_name)}}
+    )
+
+    if updated.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Deck not found.")
+
+    return {"msg": f"✅ Deck '{deck_name}' updated successfully."}
