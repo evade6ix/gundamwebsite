@@ -18,13 +18,13 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-b from-gray-50 via-white to-gray-100 text-gray-900">
+    <div className="flex flex-col min-h-screen bg-gray-50 text-gray-900">
       {/* Hero Section */}
-      <header className="w-full text-center py-16">
+      <header className="w-full text-center py-20">
         <h1 className="text-5xl md:text-6xl font-extrabold mb-4">
           Gundam TCG Hub
         </h1>
-        <p className="text-lg md:text-xl text-gray-600 mb-8">
+        <p className="text-lg md:text-xl text-gray-600 mb-12">
           Build decks, share collections, and explore all Gundam TCG cards in one place.
         </p>
 
@@ -59,87 +59,110 @@ export default function Home() {
         </Link>
       </header>
 
-      {/* Features Section */}
-      <section className="bg-gray-50 py-16">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <h2 className="text-4xl md:text-5xl font-bold mb-12">
-            Features to Power Your TCG Journey
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-8">
-            {/* Profile Page */}
-            <div className="group bg-white rounded-xl shadow hover:shadow-2xl transform hover:-translate-y-1 transition duration-300 ease-in-out p-4">
-              <img
-                src="/images/one.PNG"
-                alt="Profile Page"
-                className="w-full rounded-lg mb-4"
-              />
-              <h3 className="text-xl font-semibold mb-2 text-gray-800 group-hover:text-teal-600">
-                Profile Page
-              </h3>
-              <p className="text-gray-600">
-                Manage all your decks in one place with an intuitive interface.
-              </p>
-            </div>
+      {/* Feature Blocks */}
+      <section className="bg-white">
+        {/* Profile Page */}
+        <div className="flex flex-col md:flex-row items-center max-w-6xl mx-auto py-16 px-6">
+          <img
+            src="/images/one.PNG"
+            alt="Profile Page"
+            className="w-full md:w-1/2 rounded-xl shadow-lg mb-8 md:mb-0 md:mr-8"
+          />
+          <div>
+            <h2 className="text-3xl font-bold mb-4">Profile Page</h2>
+            <p className="text-gray-700 mb-4">
+              Manage all your decks in one place with an intuitive interface that’s designed for TCG enthusiasts.
+            </p>
+            <Link
+              to="/account"
+              className="inline-block px-5 py-2 bg-teal-600 text-white rounded-lg shadow hover:bg-teal-700 transition"
+            >
+              View Profile
+            </Link>
+          </div>
+        </div>
 
-            {/* Deck View */}
-            <div className="group bg-white rounded-xl shadow hover:shadow-2xl transform hover:-translate-y-1 transition duration-300 ease-in-out p-4">
-              <img
-                src="/images/two.PNG"
-                alt="Deck View"
-                className="w-full rounded-lg mb-4"
-              />
-              <h3 className="text-xl font-semibold mb-2 text-gray-800 group-hover:text-teal-600">
-                Deck View
-              </h3>
-              <p className="text-gray-600">
-                Dive into details for each deck and analyze your card strategy.
-              </p>
-            </div>
+        {/* Deck View */}
+        <div className="flex flex-col md:flex-row-reverse items-center max-w-6xl mx-auto py-16 px-6 bg-gray-50">
+          <img
+            src="/images/two.PNG"
+            alt="Deck View"
+            className="w-full md:w-1/2 rounded-xl shadow-lg mb-8 md:mb-0 md:ml-8"
+          />
+          <div>
+            <h2 className="text-3xl font-bold mb-4">Deck View</h2>
+            <p className="text-gray-700 mb-4">
+              Dive into deck details and analyze your card strategy with powerful tools and clean layouts.
+            </p>
+            <Link
+              to="/decks"
+              className="inline-block px-5 py-2 bg-teal-600 text-white rounded-lg shadow hover:bg-teal-700 transition"
+            >
+              Browse Decks
+            </Link>
+          </div>
+        </div>
 
-            {/* Collection */}
-            <div className="group bg-white rounded-xl shadow hover:shadow-2xl transform hover:-translate-y-1 transition duration-300 ease-in-out p-4">
-              <img
-                src="/images/three.PNG"
-                alt="Collection"
-                className="w-full rounded-lg mb-4"
-              />
-              <h3 className="text-xl font-semibold mb-2 text-gray-800 group-hover:text-teal-600">
-                Collection
-              </h3>
-              <p className="text-gray-600">
-                Track every Gundam TCG card you own and build your collection.
-              </p>
-            </div>
+        {/* Collection */}
+        <div className="flex flex-col md:flex-row items-center max-w-6xl mx-auto py-16 px-6">
+          <img
+            src="/images/three.PNG"
+            alt="Collection"
+            className="w-full md:w-1/2 rounded-xl shadow-lg mb-8 md:mb-0 md:mr-8"
+          />
+          <div>
+            <h2 className="text-3xl font-bold mb-4">Collection</h2>
+            <p className="text-gray-700 mb-4">
+              Track every Gundam TCG card you own. Build your dream collection and access it anytime.
+            </p>
+            <Link
+              to="/collection"
+              className="inline-block px-5 py-2 bg-teal-600 text-white rounded-lg shadow hover:bg-teal-700 transition"
+            >
+              Start Your Collection
+            </Link>
+          </div>
+        </div>
 
-            {/* Shared Collection */}
-            <div className="group bg-white rounded-xl shadow hover:shadow-2xl transform hover:-translate-y-1 transition duration-300 ease-in-out p-4">
-              <img
-                src="/images/four.PNG"
-                alt="Shared Collection"
-                className="w-full rounded-lg mb-4"
-              />
-              <h3 className="text-xl font-semibold mb-2 text-gray-800 group-hover:text-teal-600">
-                Shared Collection
-              </h3>
-              <p className="text-gray-600">
-                Showcase your collection to friends with a shareable link.
-              </p>
-            </div>
+        {/* Shared Collection */}
+        <div className="flex flex-col md:flex-row-reverse items-center max-w-6xl mx-auto py-16 px-6 bg-gray-50">
+          <img
+            src="/images/four.PNG"
+            alt="Shared Collection"
+            className="w-full md:w-1/2 rounded-xl shadow-lg mb-8 md:mb-0 md:ml-8"
+          />
+          <div>
+            <h2 className="text-3xl font-bold mb-4">Shared Collection</h2>
+            <p className="text-gray-700 mb-4">
+              Showcase your collection to friends and community members with a simple shareable link.
+            </p>
+            <Link
+              to="/collection"
+              className="inline-block px-5 py-2 bg-teal-600 text-white rounded-lg shadow hover:bg-teal-700 transition"
+            >
+              Share Your Collection
+            </Link>
+          </div>
+        </div>
 
-            {/* Deck Editor */}
-            <div className="group bg-white rounded-xl shadow hover:shadow-2xl transform hover:-translate-y-1 transition duration-300 ease-in-out p-4">
-              <img
-                src="/images/five.PNG"
-                alt="Deck Editor"
-                className="w-full rounded-lg mb-4"
-              />
-              <h3 className="text-xl font-semibold mb-2 text-gray-800 group-hover:text-teal-600">
-                Deck Editor
-              </h3>
-              <p className="text-gray-600">
-                Create and edit decks anytime with our user-friendly deck builder.
-              </p>
-            </div>
+        {/* Deck Editor */}
+        <div className="flex flex-col md:flex-row items-center max-w-6xl mx-auto py-16 px-6">
+          <img
+            src="/images/five.PNG"
+            alt="Deck Editor"
+            className="w-full md:w-1/2 rounded-xl shadow-lg mb-8 md:mb-0 md:mr-8"
+          />
+          <div>
+            <h2 className="text-3xl font-bold mb-4">Deck Editor</h2>
+            <p className="text-gray-700 mb-4">
+              Create and edit powerful decks on the fly. Perfect for testing strategies and preparing for tournaments.
+            </p>
+            <Link
+              to="/decks/new"
+              className="inline-block px-5 py-2 bg-teal-600 text-white rounded-lg shadow hover:bg-teal-700 transition"
+            >
+              Open Deck Editor
+            </Link>
           </div>
         </div>
       </section>
