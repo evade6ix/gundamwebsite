@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pymongo import MongoClient, errors
+from routes import auth
 import os
 import logging
 
@@ -10,14 +11,15 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
-# CORS Middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Replace "*" with ["https://gundamwebsite.vercel.app"] for prod
+    allow_origins=["*"],  # For production replace * with frontend URL
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],  # 🔥 fixed typo here
+    allow_headers=["*"],
+    expose_headers=["Authorization"],  # Allow exposing JWT token
 )
+
 
 MONGO_URI = os.getenv("MONGO_URI")
 if not MONGO_URI:
@@ -101,3 +103,5 @@ def get_card(card_id: str):
 def health():
     logger.info("💚 Health check passed")
     return {"status": "ok"}
+
+app.include_router(auth.router, prefix="/auth", tags=["auth"])

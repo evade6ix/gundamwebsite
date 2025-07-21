@@ -3,6 +3,9 @@ import Home from "./pages/Home";
 import Search from "./pages/Search";
 import Card from "./pages/Card";
 import Navbar from "./components/Navbar";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import ForgotPassword from "./pages/ForgotPassword";
 
 export default function App() {
   return (
@@ -13,6 +16,9 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/search" element={<Search />} />
           <Route path="/card/:id" element={<Card />} />
+          <Route path="/account" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
         </Routes>
       </div>
     </BrowserRouter>
