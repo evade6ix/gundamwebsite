@@ -7,11 +7,14 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: "#1F2937",
-        secondary: "#3B82F6",
-        accent: "#FBBF24",
+        primary: "#0f172a", // Dark Slate
+        secondary: "#334155", // Slate Gray
+        accent: "#14b8a6", // Teal
+      },
+      fontFamily: {
+        sans: ["Inter", "sans-serif"],
       },
     },
   },
-  plugins: [require('daisyui')],
-}
+  plugins: [require("daisyui")],
+};
