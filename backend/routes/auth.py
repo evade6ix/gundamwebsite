@@ -89,7 +89,12 @@ def login(user: UserLogin):
     if not db_user or not bcrypt.verify(user.password, db_user["password"]):
         raise HTTPException(status_code=400, detail="Invalid email or password.")
     token = create_access_token({"sub": user.email}, timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
-    return {"access_token": token, "token_type": "bearer"}
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "name": db_user["name"]  # 🟢 Return name here
+    }
+
 
 
 @router.post("/forgot-password")

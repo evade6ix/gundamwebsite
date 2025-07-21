@@ -8,7 +8,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
+ const handleSubmit = async (e) => {
   e.preventDefault();
   setLoading(true);
   setMessage("");
@@ -20,17 +20,20 @@ export default function Login() {
     });
     const data = await res.json();
     if (res.ok) {
-      setMessage("✅ Login Successful! Redirecting...");
-      setTimeout(() => navigate("/"), 2000);
+      localStorage.setItem("token", data.access_token); // 🟢 Save JWT
+      localStorage.setItem("userName", data.name);       // 🟢 Save user's name
+      setMessage("✅ Login successful! Redirecting...");
+      setTimeout(() => navigate("/account"), 2000);
     } else {
-      setMessage(`❌ ${data.detail || "Failed to register."}`);
+      setMessage(`❌ ${data.detail || "Failed to login."}`);
     }
   } catch (err) {
-    setMessage("❌ Failed to register. Please try again.");
+    setMessage("❌ Failed to login. Please try again.");
   } finally {
     setLoading(false);
   }
 };
+
 
 
   return (

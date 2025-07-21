@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 export default function Register() {
+  const [name, setName] = useState(""); // added name state
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
@@ -9,36 +10,35 @@ export default function Register() {
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  setLoading(true);
-  setMessage("");
-  try {
-    const payload = {
-      name: name.trim(),
-      email: email.trim(),
-      password: password.trim(),
-    };
-    console.log("Register Payload:", payload);
+    e.preventDefault();
+    setLoading(true);
+    setMessage("");
+    try {
+      const payload = {
+        name: name.trim(), // send name too
+        email: email.trim(),
+        password: password.trim(),
+      };
+      console.log("Register Payload:", payload);
 
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/register`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    const data = await res.json();
-    if (res.ok) {
-      setMessage("✅ Registration successful! Redirecting to login...");
-      setTimeout(() => navigate("/account"), 2000);
-    } else {
-      setMessage(`❌ ${data.detail || "Unknown error"}`);
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setMessage("✅ Registration successful! Redirecting to login...");
+        setTimeout(() => navigate("/account"), 2000);
+      } else {
+        setMessage(`❌ ${data.detail || "Unknown error"}`);
+      }
+    } catch (err) {
+      setMessage("❌ Failed to register. Please try again.");
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    setMessage("❌ Failed to register. Please try again.");
-  } finally {
-    setLoading(false);
-  }
-};
-
+  };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
@@ -47,6 +47,16 @@ export default function Register() {
         onSubmit={handleSubmit}
         className="bg-white shadow-md rounded-lg p-6 w-full max-w-sm"
       >
+        <div className="mb-4">
+          <label className="block mb-1 text-gray-700">Name</label>
+          <input
+            type="text"
+            className="w-full px-3 py-2 border rounded"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+          />
+        </div>
         <div className="mb-4">
           <label className="block mb-1 text-gray-700">Email</label>
           <input
