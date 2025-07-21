@@ -225,28 +225,6 @@ export default function DeckBuilder() {
                         {card.set?.name || card.set_name} / {card.cardType || "Unknown"} / {card.rarity || "N/A"}
                       </p>
                     </div>
-
-                    {/* Hover Popup */}
-                    {hoverCard?.id === card.id && (
-                      <div className="fixed z-50 left-[50%] top-[50%] transform -translate-x-1/2 -translate-y-1/2 bg-white border rounded shadow-lg p-2 w-72">
-                        <img
-                          src={card.images?.large || card.image_url || "/placeholder.png"}
-                          alt={card.name}
-                          className="w-full h-auto rounded mb-2"
-                        />
-                        <h4 className="font-bold text-lg">{card.name}</h4>
-                        {card.rarity && (
-                          <p className="text-gray-600 text-sm">
-                            Rarity: {card.rarity}
-                          </p>
-                        )}
-                        {card.cardType && (
-                          <p className="text-gray-600 text-sm">
-                            Type: {card.cardType}
-                          </p>
-                        )}
-                      </div>
-                    )}
                   </div>
                 ))}
               </div>
@@ -275,7 +253,7 @@ export default function DeckBuilder() {
           </div>
 
           {/* Right Panel: Deck List */}
-          <div className="lg:col-span-2 bg-white shadow rounded-lg p-4">
+          <div className="lg:col-span-2 bg-white shadow rounded-lg p-4 max-w-3xl">
             <h2 className="text-2xl font-semibold mb-4">
               Deck List ({Object.values(deck).reduce((sum, c) => sum + c.count, 0)}/50)
             </h2>
@@ -305,28 +283,6 @@ export default function DeckBuilder() {
                     >
                       Remove
                     </button>
-
-                    {/* Hover Popup */}
-                    {hoverCard?.id === c.id && (
-                      <div className="fixed z-50 left-[50%] top-[50%] transform -translate-x-1/2 -translate-y-1/2 bg-white border rounded shadow-lg p-2 w-72">
-                        <img
-                          src={c.images?.large || c.image_url || "/placeholder.png"}
-                          alt={c.name}
-                          className="w-full h-auto rounded mb-2"
-                        />
-                        <h4 className="font-bold text-lg">{c.name}</h4>
-                        {c.rarity && (
-                          <p className="text-gray-600 text-sm">
-                            Rarity: {c.rarity}
-                          </p>
-                        )}
-                        {c.cardType && (
-                          <p className="text-gray-600 text-sm">
-                            Type: {c.cardType}
-                          </p>
-                        )}
-                      </div>
-                    )}
                   </div>
                 ))}
               </div>
@@ -341,6 +297,28 @@ export default function DeckBuilder() {
           </div>
         </div>
       </div>
+
+      {/* Fixed Hover Preview Pane */}
+      {hoverCard && (
+        <div className="fixed right-4 top-24 w-64 z-50 bg-white border rounded shadow-lg p-2">
+          <img
+            src={hoverCard.images?.large || hoverCard.image_url || "/placeholder.png"}
+            alt={hoverCard.name}
+            className="w-full h-auto rounded mb-2"
+          />
+          <h4 className="font-bold text-lg">{hoverCard.name}</h4>
+          {hoverCard.rarity && (
+            <p className="text-gray-600 text-sm">
+              Rarity: {hoverCard.rarity}
+            </p>
+          )}
+          {hoverCard.cardType && (
+            <p className="text-gray-600 text-sm">
+              Type: {hoverCard.cardType}
+            </p>
+          )}
+        </div>
+      )}
     </div>
   );
 }
