@@ -1,52 +1,61 @@
-import { useParams, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { Link, useParams } from "react-router-dom";
 
 export default function Card() {
   const { id } = useParams();
   const [card, setCard] = useState(null);
 
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL}/card/${id}`)
-      .then((res) => res.json())
-      .then((data) => setCard(data));
+    async function fetchCard() {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/card/${id}`);
+        const data = await res.json();
+        setCard(data);
+      } catch (err) {
+        console.error("Failed to fetch card:", err);
+      }
+    }
+    fetchCard();
   }, [id]);
 
-  if (!card) return <p className="text-center mt-10">Loading card details...</p>;
+  if (!card) {
+    return <div className="text-center mt-10">Loading...</div>;
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <header className="bg-blue-600 text-white text-center py-4 text-2xl font-bold">
-        Gundam TCG
-      </header>
+    <div className="container mx-auto px-4 py-10">
+      <div className="flex flex-col md:flex-row gap-8">
+        {/* Card Image */}
+        <div className="md:w-1/3 flex justify-center">
+          {card.image_url ? (
+            <img
+              src={card.image_url}
+              alt={card.name}
+              className="rounded-lg shadow-lg max-h-[500px]"
+            />
+          ) : (
+            <div className="w-full h-80 bg-gray-200 rounded-lg flex items-center justify-center text-gray-500">
+              No Image Available
+            </div>
+          )}
+        </div>
 
-      <main className="flex flex-col lg:flex-row items-center justify-center gap-10 p-8">
-        <img
-          src={card.image_url}
-          alt={card.name}
-          className="rounded shadow-lg max-w-xs w-full object-contain"
-        />
-        <div className="max-w-lg w-full">
-          <h1 className="text-4xl font-bold mb-4">{card.name}</h1>
-          <p className="text-gray-700 mb-2">
-            <strong>Rarity:</strong> {card.rarity}
-          </p>
-          <p className="text-gray-700 mb-2">
-            <strong>Color:</strong> {card.color}
-          </p>
-          <p className="text-gray-700 mb-2">
-            <strong>Type:</strong> {card.cardType}
-          </p>
-          <p className="text-gray-600 mt-4">
-            {card.description || "No description available."}
-          </p>
+        {/* Card Details */}
+        <div className="md:w-2/3">
+          <h1 className="text-3xl font-bold mb-4">{card.name}</h1>
+          <p className="text-gray-600 mb-2">Rarity: <span className="font-medium">{card.rarity || "N/A"}</span></p>
+          <p className="text-gray-600 mb-2">Color: <span className="font-medium">{card.color || "N/A"}</span></p>
+          <p className="text-gray-600 mb-4">Type: <span className="font-medium">{card.type || "N/A"}</span></p>
+          <p className="text-gray-800">{card.text || "No description available."}</p>
+
           <Link
             to="/search"
-            className="inline-block mt-6 bg-blue-600 text-white px-5 py-3 rounded-lg font-semibold hover:bg-blue-700 transition"
+            className="inline-block mt-6 px-5 py-3 bg-teal-600 text-white rounded-lg shadow hover:bg-teal-700 transition"
           >
             Back to Search
           </Link>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

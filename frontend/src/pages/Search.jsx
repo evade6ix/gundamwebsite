@@ -62,10 +62,11 @@ export default function Search() {
           <input
             type="text"
             name="search"
-            placeholder="Search for a Gundam card..."
+            placeholder="Search for a card"
             defaultValue={query}
-            className="w-full max-w-md p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
+            className="w-full p-3 rounded-l border border-gray-300 outline-none text-gray-900 bg-white"
           />
+
           <button
             type="submit"
             className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition"
