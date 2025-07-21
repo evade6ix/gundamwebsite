@@ -25,12 +25,6 @@ export default function Account() {
       <div className="bg-white shadow-md rounded-lg p-6 w-full max-w-md text-center">
         <h1 className="text-3xl font-bold mb-4">Welcome, {userName}!</h1>
         <p className="mb-2 text-gray-700">Email: {userEmail}</p>
-        <button
-          onClick={handleLogout}
-          className="mt-6 px-6 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-        >
-          Logout
-        </button>
       </div>
     </div>
   );
