@@ -179,3 +179,17 @@ def save_deck(request: Request, deck: dict = Body(...)):
     if result.modified_count == 0 and result.upserted_id is None:
         raise HTTPException(status_code=500, detail="Failed to save deck.")
     return {"msg": "✅ Deck saved successfully."}
+
+# ✅ NEW: Get user decks
+@router.get("/decks")
+def get_user_decks(request: Request):
+    token = request.headers.get("Authorization", "").replace("Bearer ", "")
+    user_email = verify_token(token)
+    if not user_email:
+        raise HTTPException(status_code=401, detail="Invalid token.")
+
+    user = users_collection.find_one({"email": user_email})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found.")
+
+    return {"decks": user.get("decks", [])}
