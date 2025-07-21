@@ -72,21 +72,22 @@ export default function DeckBuilder() {
       const token = localStorage.getItem("token");
       if (!token) return navigate("/login");
 
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/users/decks`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          name: deckName.trim(),
-          cards: Object.values(deck).map((c) => ({
-            id: c.id,
-            name: c.name,
-            count: c.count,
-          })),
-        }),
-      });
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/decks`, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+  },
+  body: JSON.stringify({
+    name: deckName.trim(),
+    cards: Object.values(deck).map((c) => ({
+      id: c.id,
+      name: c.name,
+      count: c.count,
+    })),
+  }),
+});
+
       if (res.ok) {
         alert("✅ Deck saved successfully!");
         navigate("/account");
