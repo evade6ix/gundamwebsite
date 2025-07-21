@@ -47,21 +47,19 @@ export default function Login() {
           <label className="block mb-1 text-gray-700">Email</label>
           <input
             type="email"
-            className="w-full px-3 py-2 border rounded"
+            placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            required
+            className="w-full px-4 py-2 border rounded mb-4 bg-white text-black"
           />
-        </div>
-        <div className="mb-4">
-          <label className="block mb-1 text-gray-700">Password</label>
-          <input
+            <input
             type="password"
-            className="w-full px-3 py-2 border rounded"
+            placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            required
+            className="w-full px-4 py-2 border rounded mb-6 bg-white text-black"
           />
+
         </div>
         <button
           type="submit"
