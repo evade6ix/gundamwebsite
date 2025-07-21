@@ -1,6 +1,22 @@
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 export default function Home() {
+  const [cards, setCards] = useState([]);
+
+  useEffect(() => {
+    async function fetchCards() {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/cards?limit=3`);
+        const data = await res.json();
+        setCards(data.cards || []);
+      } catch (err) {
+        console.error("Failed to fetch cards:", err);
+      }
+    }
+    fetchCards();
+  }, []);
+
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-b from-white to-gray-50 text-gray-900">
       {/* Hero Section */}
@@ -14,21 +30,24 @@ export default function Home() {
 
         {/* Showcase Cards */}
         <div className="flex justify-center gap-6 mb-8 flex-wrap">
-          <img
-            src="https://images.yourgundamapi.com/cards/sample1.jpg"
-            alt="Gundam Card 1"
-            className="w-40 md:w-48 rounded-lg shadow hover:scale-105 transition"
-          />
-          <img
-            src="https://images.yourgundamapi.com/cards/sample2.jpg"
-            alt="Gundam Card 2"
-            className="w-40 md:w-48 rounded-lg shadow hover:scale-105 transition"
-          />
-          <img
-            src="https://images.yourgundamapi.com/cards/sample3.jpg"
-            alt="Gundam Card 3"
-            className="w-40 md:w-48 rounded-lg shadow hover:scale-105 transition"
-          />
+          {cards.length > 0 ? (
+            cards.map((card) => (
+              <Link
+                to={`/card/${card.id}`}
+                key={card.id}
+                className="transition transform hover:scale-105"
+              >
+                <img
+                  src={card.image_url}
+                  alt={card.name}
+                  className="w-40 md:w-48 rounded-lg shadow-lg"
+                  loading="lazy"
+                />
+              </Link>
+            ))
+          ) : (
+            <p className="text-gray-500">Loading cards...</p>
+          )}
         </div>
 
         {/* Call to Action Button */}
@@ -42,7 +61,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="mt-auto py-6 text-center text-sm text-gray-400 border-t">
-        &copy; {new Date().getFullYear()} Gundam TCG. All rights reserved.
+        &copy; {new Date().getFullYear()} Karl @ Game 3 INC. All rights reserved.
       </footer>
     </div>
   );
