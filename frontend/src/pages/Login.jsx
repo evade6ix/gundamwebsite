@@ -9,29 +9,29 @@ export default function Login() {
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage("");
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        localStorage.setItem("token", data.access_token);
-        setMessage("✅ Login successful! Redirecting...");
-        setTimeout(() => navigate("/"), 2000);
-      } else {
-        setMessage(`❌ ${data.detail}`);
-      }
-    } catch (err) {
-      setMessage("❌ Failed to login. Please try again.");
-    } finally {
-      setLoading(false);
+  e.preventDefault();
+  setLoading(true);
+  setMessage("");
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }), // 🔥 Removed name
+    });
+    const data = await res.json();
+    if (res.ok) {
+      setMessage("✅ Account created! You can now log in.");
+      setTimeout(() => navigate("/account"), 2000);
+    } else {
+      setMessage(`❌ ${data.detail || "Failed to register."}`);
     }
-  };
+  } catch (err) {
+    setMessage("❌ Failed to register. Please try again.");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
