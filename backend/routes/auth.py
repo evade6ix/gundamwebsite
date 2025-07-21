@@ -8,6 +8,8 @@ from datetime import datetime, timedelta
 import os, smtplib
 from email.mime.text import MIMEText
 from uuid import uuid4
+import hashlib
+
 
 # Environment variables
 JWT_SECRET = os.getenv("JWT_SECRET", "super_secret_jwt_key")
@@ -199,8 +201,8 @@ def share_collection(request: Request):
     if not user:
         raise HTTPException(status_code=404, detail="User not found.")
 
-    # Reuse their email or a hashed version as the share ID
-    share_id = user_email.replace("@", "_at_").replace(".", "_dot_")
+    # Create a short, anonymous share_id from hashed email
+    share_id = hashlib.sha256(user_email.encode()).hexdigest()[:10]
 
     db.shared_collections.update_one(
         {"share_id": share_id},
@@ -214,6 +216,7 @@ def share_collection(request: Request):
     )
 
     return {"shareId": share_id}
+
 
 
 # ✅ NEW: Save user deck
