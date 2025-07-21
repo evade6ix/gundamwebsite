@@ -166,18 +166,26 @@ export default function Collection() {
         </div>
 
         {shareLink && (
-          <div className="mb-4">
-            <p className="text-green-700">✅ Shareable Link:</p>
-            <a
-              href={shareLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-600 underline"
-            >
-              {shareLink}
-            </a>
-          </div>
-        )}
+  <div className="flex items-center gap-2 mb-4">
+    <label className="font-medium text-gray-700">Shareable Link:</label>
+    <input
+      type="text"
+      value={shareLink}
+      readOnly
+      className="flex-1 px-3 py-2 border rounded bg-gray-100 text-gray-800"
+    />
+    <button
+      onClick={() => {
+        navigator.clipboard.writeText(shareLink);
+        alert("✅ Link copied to clipboard!");
+      }}
+      className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+    >
+      Copy
+    </button>
+  </div>
+)}
+
 
         {/* Search */}
         <form onSubmit={handleSearch} className="flex gap-2 mb-4">
