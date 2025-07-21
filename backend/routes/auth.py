@@ -139,9 +139,15 @@ def save_collection(request: Request, collection: dict = Body(...)):
     if not user_email:
         raise HTTPException(status_code=401, detail="Invalid token.")
 
+    # Validate incoming data
+    cards = collection.get("cards", [])
+    if not isinstance(cards, list):
+        raise HTTPException(status_code=400, detail="Invalid collection format.")
+
+    # Save or update collection
     result = users_collection.update_one(
         {"email": user_email},
-        {"$set": {"collection": collection.get("cards", [])}},
+        {"$set": {"collection": cards}},  # 💥 Directly store array of cards
         upsert=True
     )
 
@@ -149,6 +155,20 @@ def save_collection(request: Request, collection: dict = Body(...)):
         raise HTTPException(status_code=500, detail="Failed to save collection.")
 
     return {"msg": "✅ Collection saved successfully."}
+
+@router.get("/collection")
+def get_collection(request: Request):
+    token = request.headers.get("Authorization", "").replace("Bearer ", "")
+    user_email = verify_token(token)
+    if not user_email:
+        raise HTTPException(status_code=401, detail="Invalid token.")
+
+    user = users_collection.find_one({"email": user_email})
+    if not user or "collection" not in user:
+        return {"cards": []}  # 🔥 Return empty array if no collection
+
+    return {"cards": user["collection"]}
+
 
 @router.get("/collection/shared/{share_id}")
 def get_shared_collection(share_id: str):
