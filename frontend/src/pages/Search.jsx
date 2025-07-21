@@ -50,10 +50,6 @@ export default function Search() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-blue-600 text-white py-4 text-center text-2xl font-bold">
-        Gundam TCG Search
-      </header>
-
       <div className="container mx-auto px-4 py-8">
         <form
           onSubmit={handleSearch}
