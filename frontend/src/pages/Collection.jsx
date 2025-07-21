@@ -14,19 +14,17 @@ export default function Collection() {
 
   const CARDS_PER_PAGE = 20;
 
-  // ✅ Auto-load user's saved collection on page load
+  // ✅ Auto-load user's saved collection + share link on page load
   useEffect(() => {
-    const fetchCollection = async () => {
+    const fetchData = async () => {
       try {
         const token = localStorage.getItem("token");
         if (!token) return navigate("/login");
 
+        // Load collection
         const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/collection`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
-
         if (res.ok) {
           const data = await res.json();
           const savedCollection = {};
@@ -37,14 +35,29 @@ export default function Collection() {
         } else {
           console.error("Failed to load collection");
         }
+
+        // Load shareable link
+        const shareRes = await fetch(`${import.meta.env.VITE_API_URL}/auth/collection/share`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (shareRes.ok) {
+          const shareData = await shareRes.json();
+          setShareLink(`${window.location.origin}/collection/view/${shareData.shareId}`);
+        } else {
+          console.error("Failed to load share link");
+        }
       } catch (err) {
-        console.error("Error fetching collection:", err);
+        console.error("Error fetching collection or share link:", err);
       } finally {
         setLoadingCollection(false);
       }
     };
 
-    fetchCollection();
+    fetchData();
   }, [navigate]);
 
   const handleSearch = async (e, page = 1) => {
@@ -97,7 +110,7 @@ export default function Collection() {
       ...collection,
       [card.id]: {
         ...card,
-        count: currentCount + 1, // ✅ Unlimited copies
+        count: currentCount + 1,
       },
     };
     setCollection(updatedCollection);
@@ -115,38 +128,6 @@ export default function Collection() {
     saveCollectionToDB(updatedCollection);
   };
 
-  const shareCollection = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) return navigate("/login");
-
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/collection/share`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          cards: Object.values(collection).map((c) => ({
-            id: c.id,
-            name: c.name,
-            count: c.count,
-          })),
-        }),
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        setShareLink(`${window.location.origin}/collection/view/${data.shareId}`);
-      } else {
-        const error = await res.json();
-        alert(`❌ ${error.detail}`);
-      }
-    } catch (err) {
-      console.error("Failed to share collection:", err);
-    }
-  };
-
   if (loadingCollection) {
     return <p className="text-center mt-8">Loading your collection...</p>;
   }
@@ -155,37 +136,29 @@ export default function Collection() {
     <div className="bg-gray-50 min-h-screen">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-4xl font-bold">My Collection</h1>
-          <button
-            onClick={shareCollection}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-          >
-            Share Collection
-          </button>
-        </div>
+        <h1 className="text-4xl font-bold mb-6">My Collection</h1>
 
+        {/* Shareable Link */}
         {shareLink && (
-  <div className="flex items-center gap-2 mb-4">
-    <label className="font-medium text-gray-700">Shareable Link:</label>
-    <input
-      type="text"
-      value={shareLink}
-      readOnly
-      className="flex-1 px-3 py-2 border rounded bg-gray-100 text-gray-800"
-    />
-    <button
-      onClick={() => {
-        navigator.clipboard.writeText(shareLink);
-        alert("✅ Link copied to clipboard!");
-      }}
-      className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-    >
-      Copy
-    </button>
-  </div>
-)}
-
+          <div className="flex items-center gap-2 mb-4">
+            <label className="font-medium text-gray-700">Shareable Link:</label>
+            <input
+              type="text"
+              value={shareLink}
+              readOnly
+              className="flex-1 px-3 py-2 border rounded bg-gray-100 text-gray-800"
+            />
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(shareLink);
+                alert("✅ Link copied to clipboard!");
+              }}
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            >
+              Copy
+            </button>
+          </div>
+        )}
 
         {/* Search */}
         <form onSubmit={handleSearch} className="flex gap-2 mb-4">
