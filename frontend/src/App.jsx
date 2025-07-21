@@ -18,11 +18,11 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/search" element={<Search />} />
           <Route path="/card/:id" element={<Card />} />
-          <Route path="/account" element={<Login />} />
+          <Route path="/login" element={<Login />} /> {/* 🟢 Login moved to /login */}
+          <Route path="/account" element={<Account />} /> {/* 🟢 Account is now correct */}
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/account" element={<Account />} />
         </Routes>
       </div>
     </BrowserRouter>
