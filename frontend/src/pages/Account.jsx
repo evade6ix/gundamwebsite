@@ -19,7 +19,7 @@ export default function Account() {
     const fetchDecks = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/users/decks`, {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/users/decks`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

@@ -17,13 +17,14 @@ export default function DeckDetail() {
         }
 
         const res = await fetch(
-          `${import.meta.env.VITE_API_URL}/users/decks/${encodeURIComponent(deckName)}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+  `${import.meta.env.VITE_API_URL}/auth/users/decks/${encodeURIComponent(deckName)}`,
+  {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  }
+);
+
 
         if (res.ok) {
           const data = await res.json();
