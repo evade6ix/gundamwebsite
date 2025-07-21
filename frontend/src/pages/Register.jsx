@@ -50,7 +50,7 @@ export default function Register() {
         <div className="mb-4">
           <input
             type="text"
-            placeholder="Name"
+            placeholder="Username"
             value={name}
             onChange={(e) => setName(e.target.value)}
             className="w-full px-4 py-2 border rounded mb-4 bg-white text-black"

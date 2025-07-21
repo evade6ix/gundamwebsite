@@ -4,6 +4,7 @@ import { useParams, Link } from "react-router-dom";
 export default function CollectionView() {
   const { shareId } = useParams();
   const [collection, setCollection] = useState([]);
+  const [owner, setOwner] = useState("Unknown User");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -21,6 +22,9 @@ export default function CollectionView() {
 
         const data = await res.json();
         const rawCards = data.cards || [];
+
+        // Save owner's name for header
+        setOwner(data.owner || "Unknown User");
 
         // Enrich cards with full details from DB
         const enrichedCards = await Promise.all(
@@ -71,13 +75,15 @@ export default function CollectionView() {
   return (
     <div className="bg-gray-50 min-h-screen">
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold text-center mb-6">Shared Collection</h1>
-        <p className="text-center text-gray-600 mb-8">This collection is view-only.</p>
+        {/* 🔥 Updated Header */}
+        <h1 className="text-4xl font-bold text-center mb-6">
+          Viewing {owner}'s Collection
+        </h1>
         <div className="grid grid-cols-5 gap-4">
           {collection.map((card) => (
             <div
               key={card.id}
-              className="p-2 border rounded hover:shadow cursor-default"
+              className="p-2 border rounded hover:shadow cursor-default bg-white"
             >
               <img
                 src={card.images?.small || card.image_url || "/placeholder.png"}
