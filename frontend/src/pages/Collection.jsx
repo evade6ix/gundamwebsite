@@ -58,22 +58,27 @@ export default function Collection() {
   }, [navigate]);
 
   const handleSearch = async (e, page = 1) => {
-    e?.preventDefault();
-    try {
-      setLoading(true);
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/cards?page=${page}&limit=${CARDS_PER_PAGE}`
-      );
-      const data = await res.json();
-      setSearchResults(data.cards || []);
-      setCurrentPage(data.page || 1);
-      setTotalPages(data.totalPages || 1);
-    } catch (err) {
-      console.error("Error fetching cards:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  if (e) e.preventDefault();
+
+  try {
+    setLoading(true);
+
+    const endpoint = query.trim()
+      ? `${import.meta.env.VITE_API_URL}/cards?name=${encodeURIComponent(query)}&page=${page}&limit=${CARDS_PER_PAGE}`
+      : `${import.meta.env.VITE_API_URL}/cards?page=${page}&limit=${CARDS_PER_PAGE}`;
+
+    const res = await fetch(endpoint);
+    const data = await res.json();
+    setSearchResults(data.cards || []);
+    setCurrentPage(data.page || 1);
+    setTotalPages(data.totalPages || 1);
+  } catch (err) {
+    console.error("Error fetching cards:", err);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const saveCollectionToDB = async (updatedCollection) => {
     try {
@@ -169,39 +174,45 @@ export default function Collection() {
         </form>
 
         {/* Search Results */}
-        {loading ? (
-          <p className="text-gray-500">Loading cards...</p>
-        ) : (
-          <div className="grid grid-cols-5 gap-4">
-            {searchResults.map((card) => (
-              <div key={card.id} className="p-2 border rounded hover:shadow">
-                <img
-                  src={card.images?.small || card.image_url || "/placeholder.png"}
-                  alt={card.name}
-                  className="w-full h-40 object-contain rounded cursor-pointer"
-                  onClick={() => addToCollection(card)}
-                />
-                <div className="mt-2">
-                  <h3 className="text-lg font-medium">{card.name}</h3>
-                  <p className="text-gray-500 text-sm">
-                    {card.set?.name || card.set_name} / {card.cardType || "Unknown"} / {card.rarity || "N/A"}
-                  </p>
-                  {collection[card.id] && (
-                    <>
-                      <p className="text-gray-800 text-sm mt-1">Copies: {collection[card.id].count}</p>
-                      <button
-                        onClick={() => removeFromCollection(card.id)}
-                        className="mt-2 bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700"
-                      >
-                        Remove
-                      </button>
-                    </>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+{loading ? (
+  <p className="text-gray-500">Loading cards...</p>
+) : (
+  <div className="grid grid-cols-5 gap-6">
+    {searchResults.map((card) => (
+      <div
+        key={card.id}
+        className="p-4 border rounded-lg hover:shadow-lg transition-transform transform hover:scale-105"
+      >
+        <img
+          src={card.images?.small || card.image_url || "/placeholder.png"}
+          alt={card.name}
+          className="w-full h-60 object-contain rounded-lg mb-3 cursor-pointer"
+          onClick={() => addToCollection(card)}
+        />
+        <div>
+          <h3 className="text-xl font-semibold">{card.name}</h3>
+          <p className="text-gray-600 text-base">
+            {card.set?.name || card.set_name} / {card.cardType || "Unknown"} / {card.rarity || "N/A"}
+          </p>
+          {collection[card.id] && (
+            <>
+              <p className="text-gray-800 text-base mt-2">
+                Copies: {collection[card.id].count}
+              </p>
+              <button
+                onClick={() => removeFromCollection(card.id)}
+                className="mt-3 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+              >
+                Remove
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    ))}
+  </div>
+)}
+
 
         {/* Pagination */}
         <div className="flex justify-between items-center mt-4">
