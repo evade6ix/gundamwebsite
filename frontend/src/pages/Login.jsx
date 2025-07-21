@@ -13,10 +13,10 @@ export default function Login() {
   setLoading(true);
   setMessage("");
   try {
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/register`, {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }), // 🔥 Removed name
+      body: JSON.stringify({ email, password }),
     });
     const data = await res.json();
     if (res.ok) {
