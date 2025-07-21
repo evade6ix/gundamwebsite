@@ -82,7 +82,7 @@ export default function CollectionView() {
               <img
                 src={card.images?.small || card.image_url || "/placeholder.png"}
                 alt={card.name}
-                className="w-full h-40 object-contain rounded"
+                className="w-full h-72 object-contain rounded shadow-lg"
               />
               <div className="mt-2">
                 <h3 className="text-lg font-medium">{card.name}</h3>
