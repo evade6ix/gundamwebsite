@@ -149,10 +149,7 @@ export default function Collection() {
               className="flex-1 px-3 py-2 border rounded bg-gray-100 text-gray-800"
             />
             <button
-              onClick={() => {
-                navigator.clipboard.writeText(shareLink);
-                alert("✅ Link copied to clipboard!");
-              }}
+              onClick={() => navigator.clipboard.writeText(shareLink)}
               className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
             >
               Copy
