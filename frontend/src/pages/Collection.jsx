@@ -14,7 +14,7 @@ export default function Collection() {
 
   const CARDS_PER_PAGE = 20;
 
-  // ✅ Auto-load user's saved collection + share link on page load
+  // ✅ Load user's saved collection + share link + preload all cards
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -32,8 +32,6 @@ export default function Collection() {
             savedCollection[card.id] = { ...card };
           });
           setCollection(savedCollection);
-        } else {
-          console.error("Failed to load collection");
         }
 
         // Load shareable link
@@ -47,34 +45,31 @@ export default function Collection() {
         if (shareRes.ok) {
           const shareData = await shareRes.json();
           setShareLink(`${window.location.origin}/collection/view/${shareData.shareId}`);
-        } else {
-          console.error("Failed to load share link");
         }
       } catch (err) {
-        console.error("Error fetching collection or share link:", err);
+        console.error("Error loading collection or share link:", err);
       } finally {
         setLoadingCollection(false);
       }
     };
 
     fetchData();
+    handleSearch(); // 👈 Auto-load first page of all cards
   }, [navigate]);
 
   const handleSearch = async (e, page = 1) => {
     e?.preventDefault();
-    if (!query.trim()) return;
-
     try {
       setLoading(true);
       const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/cards?name=${encodeURIComponent(query)}&page=${page}&limit=${CARDS_PER_PAGE}`
+        `${import.meta.env.VITE_API_URL}/cards?page=${page}&limit=${CARDS_PER_PAGE}`
       );
       const data = await res.json();
       setSearchResults(data.cards || []);
       setCurrentPage(data.page || 1);
       setTotalPages(data.totalPages || 1);
     } catch (err) {
-      console.error("Error searching cards:", err);
+      console.error("Error fetching cards:", err);
     } finally {
       setLoading(false);
     }
@@ -135,7 +130,6 @@ export default function Collection() {
   return (
     <div className="bg-gray-50 min-h-screen">
       <div className="container mx-auto px-4 py-8">
-        {/* Header */}
         <h1 className="text-4xl font-bold mb-6">My Collection</h1>
 
         {/* Shareable Link */}
@@ -176,14 +170,11 @@ export default function Collection() {
 
         {/* Search Results */}
         {loading ? (
-          <p className="text-gray-500">Searching...</p>
+          <p className="text-gray-500">Loading cards...</p>
         ) : (
           <div className="grid grid-cols-5 gap-4">
             {searchResults.map((card) => (
-              <div
-                key={card.id}
-                className="p-2 border rounded hover:shadow"
-              >
+              <div key={card.id} className="p-2 border rounded hover:shadow">
                 <img
                   src={card.images?.small || card.image_url || "/placeholder.png"}
                   alt={card.name}
@@ -197,9 +188,7 @@ export default function Collection() {
                   </p>
                   {collection[card.id] && (
                     <>
-                      <p className="text-gray-800 text-sm mt-1">
-                        Copies: {collection[card.id].count}
-                      </p>
+                      <p className="text-gray-800 text-sm mt-1">Copies: {collection[card.id].count}</p>
                       <button
                         onClick={() => removeFromCollection(card.id)}
                         className="mt-2 bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700"
@@ -223,9 +212,7 @@ export default function Collection() {
           >
             ← Prev
           </button>
-          <span className="text-gray-600">
-            Page {currentPage} of {totalPages}
-          </span>
+          <span className="text-gray-600">Page {currentPage} of {totalPages}</span>
           <button
             disabled={currentPage === totalPages}
             onClick={(e) => handleSearch(e, currentPage + 1)}

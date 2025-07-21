@@ -48,7 +48,7 @@ export default function ResetPassword() {
           <label className="block mb-1 text-gray-700">New Password</label>
           <input
             type="password"
-            className="w-full px-3 py-2 border rounded"
+            className="w-full px-3 py-2 border rounded bg-white text-black"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             required
