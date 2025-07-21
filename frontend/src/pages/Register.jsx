@@ -9,28 +9,36 @@ export default function Register() {
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage("");
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setMessage("✅ Registration successful! Redirecting to login...");
-        setTimeout(() => navigate("/account"), 2000);
-      } else {
-        setMessage(`❌ ${data.detail}`);
-      }
-    } catch (err) {
-      setMessage("❌ Failed to register. Please try again.");
-    } finally {
-      setLoading(false);
+  e.preventDefault();
+  setLoading(true);
+  setMessage("");
+  try {
+    const payload = {
+      name: name.trim(),
+      email: email.trim(),
+      password: password.trim(),
+    };
+    console.log("Register Payload:", payload);
+
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      setMessage("✅ Registration successful! Redirecting to login...");
+      setTimeout(() => navigate("/account"), 2000);
+    } else {
+      setMessage(`❌ ${data.detail || "Unknown error"}`);
     }
-  };
+  } catch (err) {
+    setMessage("❌ Failed to register. Please try again.");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">

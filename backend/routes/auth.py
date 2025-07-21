@@ -31,9 +31,10 @@ RESET_TOKEN_EXPIRE_MINUTES = 30  # 30 minutes
 
 # Pydantic models
 class UserRegister(BaseModel):
-    name: str  # <-- Added name field
+    name: str = "Anonymous"  # Default to Anonymous if missing
     email: EmailStr
     password: str
+
 
 class UserLogin(BaseModel):
     email: EmailStr
