@@ -298,27 +298,27 @@ export default function DeckBuilder() {
         </div>
       </div>
 
-      {/* Fixed Hover Preview Pane */}
-      {hoverCard && (
-        <div className="fixed right-4 top-24 w-64 z-50 bg-white border rounded shadow-lg p-2">
-          <img
-            src={hoverCard.images?.large || hoverCard.image_url || "/placeholder.png"}
-            alt={hoverCard.name}
-            className="w-full h-auto rounded mb-2"
-          />
-          <h4 className="font-bold text-lg">{hoverCard.name}</h4>
-          {hoverCard.rarity && (
-            <p className="text-gray-600 text-sm">
-              Rarity: {hoverCard.rarity}
-            </p>
-          )}
-          {hoverCard.cardType && (
-            <p className="text-gray-600 text-sm">
-              Type: {hoverCard.cardType}
-            </p>
-          )}
-        </div>
-      )}
-    </div>
-  );
+     {/* Fixed Hover Preview Pane */}
+{hoverCard && (
+  <div className="fixed right-8 top-48 w-96 z-50 bg-white border rounded-xl shadow-2xl p-4">
+    <img
+      src={hoverCard.images?.large || hoverCard.image_url || "/placeholder.png"}
+      alt={hoverCard.name}
+      className="w-full h-auto rounded-xl mb-4 shadow-lg"
+    />
+    <h4 className="font-bold text-xl mb-2">{hoverCard.name}</h4>
+    {hoverCard.rarity && (
+      <p className="text-gray-700 text-base mb-1">
+        <span className="font-semibold">Rarity:</span> {hoverCard.rarity}
+      </p>
+    )}
+    {hoverCard.cardType && (
+      <p className="text-gray-700 text-base">
+        <span className="font-semibold">Type:</span> {hoverCard.cardType}
+      </p>
+    )}
+  </div>
+)}
+</div>
+);
 }
