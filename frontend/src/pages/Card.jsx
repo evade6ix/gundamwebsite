@@ -41,7 +41,7 @@ export default function Card() {
   } = card;
 
   return (
-    <div className="container mx-auto px-4 py-10">
+    <div className="container mx-auto px-4 py-10 bg-gray-50 min-h-screen">
       <div className="flex flex-col md:flex-row gap-10 bg-white shadow-lg rounded-lg p-6">
         {/* Card Image */}
         <div className="md:w-1/2 flex justify-center items-center">
@@ -88,12 +88,13 @@ export default function Card() {
             </p>
           </div>
 
-          <Link
-            to="/search"
+          <button
+            onClick={() => window.history.back()}
             className="inline-block mt-8 px-6 py-3 bg-teal-600 text-white rounded-lg shadow hover:bg-teal-700 transition"
           >
             Back to Search
-          </Link>
+          </button>
+
         </div>
       </div>
     </div>
