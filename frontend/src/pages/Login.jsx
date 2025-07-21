@@ -8,33 +8,31 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
- const handleSubmit = async (e) => {
-  e.preventDefault();
-  setLoading(true);
-  setMessage("");
-  try {
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
-    const data = await res.json();
-    if (res.ok) {
-      localStorage.setItem("token", data.access_token); // 🟢 Save JWT
-      localStorage.setItem("userName", data.name);       // 🟢 Save user's name
-      setMessage("✅ Login successful! Redirecting...");
-      navigate("/account", { replace: true });
-    } else {
-      setMessage(`❌ ${data.detail || "Failed to login."}`);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setMessage("");
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        localStorage.setItem("token", data.access_token);
+        localStorage.setItem("userName", data.name);
+        setMessage("✅ Login successful! Redirecting...");
+        navigate("/account", { replace: true });
+      } else {
+        setMessage(`❌ ${data.detail || "Failed to login."}`);
+      }
+    } catch (err) {
+      setMessage("❌ Failed to login. Please try again.");
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    setMessage("❌ Failed to login. Please try again.");
-  } finally {
-    setLoading(false);
-  }
-};
-
-
+  };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
@@ -44,7 +42,6 @@ export default function Login() {
         className="bg-white shadow-md rounded-lg p-6 w-full max-w-sm"
       >
         <div className="mb-4">
-          <label className="block mb-1 text-gray-700">Email</label>
           <input
             type="email"
             placeholder="Email"
@@ -52,14 +49,13 @@ export default function Login() {
             onChange={(e) => setEmail(e.target.value)}
             className="w-full px-4 py-2 border rounded mb-4 bg-white text-black"
           />
-            <input
+          <input
             type="password"
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="w-full px-4 py-2 border rounded mb-6 bg-white text-black"
           />
-
         </div>
         <button
           type="submit"

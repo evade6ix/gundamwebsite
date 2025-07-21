@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 export default function Register() {
-  const [name, setName] = useState(""); // added name state
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
@@ -15,7 +15,7 @@ export default function Register() {
     setMessage("");
     try {
       const payload = {
-        name: name.trim(), // send name too
+        name: name.trim(),
         email: email.trim(),
         password: password.trim(),
       };
@@ -48,29 +48,27 @@ export default function Register() {
         className="bg-white shadow-md rounded-lg p-6 w-full max-w-sm"
       >
         <div className="mb-4">
-          <label className="block mb-1 text-gray-700">Name</label>
           <input
-  type="text"
-  placeholder="Name"
-  value={name}
-  onChange={(e) => setName(e.target.value)}
-  className="w-full px-4 py-2 border rounded mb-4 bg-white text-black"
-/>
-<input
-  type="email"
-  placeholder="Email"
-  value={email}
-  onChange={(e) => setEmail(e.target.value)}
-  className="w-full px-4 py-2 border rounded mb-4 bg-white text-black"
-/>
-<input
-  type="password"
-  placeholder="Password"
-  value={password}
-  onChange={(e) => setPassword(e.target.value)}
-  className="w-full px-4 py-2 border rounded mb-6 bg-white text-black"
-/>
-
+            type="text"
+            placeholder="Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="w-full px-4 py-2 border rounded mb-4 bg-white text-black"
+          />
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full px-4 py-2 border rounded mb-4 bg-white text-black"
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full px-4 py-2 border rounded mb-6 bg-white text-black"
+          />
         </div>
         <button
           type="submit"

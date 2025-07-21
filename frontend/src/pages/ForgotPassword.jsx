@@ -32,10 +32,10 @@ export default function ForgotPassword() {
         className="bg-white shadow-md rounded-lg p-6 w-full max-w-sm"
       >
         <div className="mb-4">
-          <label className="block mb-1 text-gray-700">Email</label>
           <input
             type="email"
-            className="w-full px-3 py-2 border rounded bg-white text-black"
+            placeholder="Email"
+            className="w-full px-3 py-2 border rounded"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
