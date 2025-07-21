@@ -6,7 +6,7 @@ import Navbar from "./components/Navbar";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
-
+import ResetPassword from "./pages/ResetPassword";
 export default function App() {
   return (
     <BrowserRouter>
@@ -19,6 +19,7 @@ export default function App() {
           <Route path="/account" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
         </Routes>
       </div>
     </BrowserRouter>

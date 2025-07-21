@@ -31,6 +31,7 @@ RESET_TOKEN_EXPIRE_MINUTES = 30  # 30 minutes
 
 # Pydantic models
 class UserRegister(BaseModel):
+    name: str  # <-- Added name field
     email: EmailStr
     password: str
 
@@ -73,7 +74,11 @@ def register(user: UserRegister):
     if users_collection.find_one({"email": user.email}):
         raise HTTPException(status_code=400, detail="Email already registered.")
     hashed_pw = bcrypt.hash(user.password)
-    users_collection.insert_one({"email": user.email, "password": hashed_pw})
+    users_collection.insert_one({
+        "name": user.name,  # Save name too
+        "email": user.email,
+        "password": hashed_pw
+    })
     return {"msg": "✅ User registered successfully."}
 
 
