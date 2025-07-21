@@ -95,7 +95,7 @@ export default function Home() {
               Dive into deck details and analyze your card strategy with powerful tools and clean layouts.
             </p>
             <Link
-              to="/decks"
+              to="/account"
               className="inline-block px-5 py-2 bg-teal-600 text-white rounded-lg shadow hover:bg-teal-700 transition"
             >
               Browse Decks
