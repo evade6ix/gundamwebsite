@@ -105,8 +105,8 @@ export default function Account() {
               <Link
                 key={idx}
                 to={`/decks/${encodeURIComponent(deck.name)}`}
-                className="bg-white shadow rounded-lg p-4 hover:shadow-xl transition relative"
-              >
+                className="bg-white shadow rounded-lg p-4 hover:shadow-xl transition relative overflow-visible"
+            >
                 <div className="mb-2">
                   <h3 className="text-xl font-semibold text-gray-800 truncate">
                     {deck.name}

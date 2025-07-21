@@ -1,25 +1,33 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function DeckBuilder() {
   const [deckName, setDeckName] = useState("");
   const [query, setQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [deck, setDeck] = useState({});
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSearch = async (e) => {
-    e.preventDefault();
+  const handleSearch = async (e, page = 1) => {
+    e?.preventDefault();
     if (!query.trim()) return;
 
     try {
+      setLoading(true);
       const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/cards?name=${encodeURIComponent(query)}`
+        `${import.meta.env.VITE_API_URL}/cards?name=${encodeURIComponent(query)}&page=${page}&limit=10`
       );
       const data = await res.json();
       setSearchResults(data.cards || []);
+      setCurrentPage(data.page || 1);
+      setTotalPages(data.totalPages || 1);
     } catch (err) {
       console.error("Error searching cards:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -33,7 +41,7 @@ export default function DeckBuilder() {
     }
 
     if (currentCount >= 4) {
-      alert("❌ You can only have up to 4 copies of a card.");
+      alert("❌ Max 4 copies per card.");
       return;
     }
 
@@ -58,13 +66,13 @@ export default function DeckBuilder() {
 
   const saveDeck = async () => {
     if (!deckName.trim()) {
-      alert("Please give your deck a name.");
+      alert("❌ Enter a deck name.");
       return;
     }
 
     const totalCards = Object.values(deck).reduce((sum, c) => sum + c.count, 0);
     if (totalCards < 10) {
-      alert("❌ Deck must have at least 10 cards to save.");
+      alert("❌ Deck must have at least 10 cards.");
       return;
     }
 
@@ -73,20 +81,20 @@ export default function DeckBuilder() {
       if (!token) return navigate("/login");
 
       const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/decks`, {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`,
-  },
-  body: JSON.stringify({
-    name: deckName.trim(),
-    cards: Object.values(deck).map((c) => ({
-      id: c.id,
-      name: c.name,
-      count: c.count,
-    })),
-  }),
-});
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name: deckName.trim(),
+          cards: Object.values(deck).map((c) => ({
+            id: c.id,
+            name: c.name,
+            count: c.count,
+          })),
+        }),
+      });
 
       if (res.ok) {
         alert("✅ Deck saved successfully!");
@@ -102,83 +110,122 @@ export default function DeckBuilder() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-4">New Deck Builder</h1>
-      <div className="mb-4">
+      {/* Header */}
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-4xl font-bold">New Deck Builder</h1>
         <input
           type="text"
           placeholder="Deck Name"
           value={deckName}
           onChange={(e) => setDeckName(e.target.value)}
-          className="w-full px-4 py-2 border rounded mb-4"
+          className="border rounded px-4 py-2 w-1/3"
         />
       </div>
 
-      <form onSubmit={handleSearch} className="flex gap-2 mb-6">
-        <input
-          type="text"
-          placeholder="Search for cards"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          className="flex-1 px-4 py-2 border rounded"
-        />
-        <button
-          type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
-          Search
-        </button>
-      </form>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Left Panel: Search */}
+        <div className="lg:col-span-1 bg-white shadow rounded-lg p-4">
+          <h2 className="text-2xl font-semibold mb-3">Search Cards</h2>
+          <form onSubmit={handleSearch} className="flex gap-2 mb-4">
+            <input
+              type="text"
+              placeholder="Search for cards"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="flex-1 border rounded px-4 py-2"
+            />
+            <button
+              type="submit"
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            >
+              Search
+            </button>
+          </form>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Search Results */}
-        <div className="border rounded p-4">
-          <h2 className="text-xl font-semibold mb-3">Search Results</h2>
-          <div className="grid grid-cols-2 gap-3">
-            {searchResults.map((card) => (
-              <div
-                key={card.id}
-                className="border rounded p-2 text-center hover:shadow cursor-pointer"
-                onClick={() => addToDeck(card)}
-              >
-                <img
-                  src={card.image_url}
-                  alt={card.name}
-                  className="w-full h-32 object-contain mb-1"
-                />
-                <p className="font-medium">{card.name}</p>
-              </div>
-            ))}
+          {/* Search Results */}
+          {loading ? (
+            <p className="text-gray-500">Searching...</p>
+          ) : (
+            <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+              {searchResults.map((card) => (
+                <div
+                  key={card.id}
+                  className="flex items-center gap-3 p-2 border rounded hover:shadow cursor-pointer"
+                  onClick={() => addToDeck(card)}
+                >
+                  <img
+                    src={card.images?.small || card.image_url}
+                    alt={card.name}
+                    className="w-12 h-16 object-contain rounded"
+                  />
+                  <div>
+                    <h3 className="text-lg font-medium">{card.name}</h3>
+                    <p className="text-gray-500 text-sm">{card.set?.name || card.set_name}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Pagination */}
+          <div className="flex justify-between items-center mt-4">
+            <button
+              disabled={currentPage === 1}
+              onClick={(e) => handleSearch(e, currentPage - 1)}
+              className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
+            >
+              ← Prev
+            </button>
+            <span className="text-gray-600">
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              disabled={currentPage === totalPages}
+              onClick={(e) => handleSearch(e, currentPage + 1)}
+              className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
+            >
+              Next →
+            </button>
           </div>
         </div>
 
-        {/* Deck List */}
-        <div className="md:col-span-2 border rounded p-4">
-          <h2 className="text-xl font-semibold mb-3">
+        {/* Right Panel: Deck List */}
+        <div className="lg:col-span-2 bg-white shadow rounded-lg p-4">
+          <h2 className="text-2xl font-semibold mb-4">
             Deck List ({Object.values(deck).reduce((sum, c) => sum + c.count, 0)}/50)
           </h2>
-          {Object.values(deck).length === 0 && (
-            <p className="text-gray-600">No cards added yet.</p>
-          )}
-          <ul className="space-y-2">
-            {Object.values(deck).map((c) => (
-              <li key={c.id} className="flex justify-between items-center">
-                <div>
-                  <p className="font-medium">{c.name}</p>
-                  <p className="text-sm text-gray-500">Copies: {c.count}</p>
-                </div>
-                <button
-                  onClick={() => removeFromDeck(c.id)}
-                  className="text-red-600 hover:underline text-sm"
+          {Object.values(deck).length === 0 ? (
+            <p className="text-gray-500">No cards added yet.</p>
+          ) : (
+            <div className="space-y-3 max-h-[70vh] overflow-y-auto">
+              {Object.values(deck).map((c) => (
+                <div
+                  key={c.id}
+                  className="flex items-center gap-3 p-2 border rounded hover:shadow"
                 >
-                  Remove
-                </button>
-              </li>
-            ))}
-          </ul>
+                  <img
+                    src={c.images?.small || c.image_url}
+                    alt={c.name}
+                    className="w-12 h-16 object-contain rounded"
+                  />
+                  <div className="flex-1">
+                    <h3 className="text-lg font-medium">{c.name}</h3>
+                    <p className="text-gray-500 text-sm">Copies: {c.count}</p>
+                  </div>
+                  <button
+                    onClick={() => removeFromDeck(c.id)}
+                    className="text-red-600 hover:underline text-sm"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
 
           <button
             onClick={saveDeck}
-            className="mt-6 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+            className="mt-6 w-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
           >
             Save Deck
           </button>

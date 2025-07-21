@@ -194,7 +194,6 @@ def get_user_decks(request: Request):
     return {"decks": user.get("decks", [])}
 
 
-# ✅ NEW: Get a single user deck
 @router.get("/users/decks/{deck_name}")
 def get_single_deck(deck_name: str, request: Request):
     token = request.headers.get("Authorization", "").replace("Bearer ", "")
@@ -210,4 +209,22 @@ def get_single_deck(deck_name: str, request: Request):
     if not deck:
         raise HTTPException(status_code=404, detail="Deck not found.")
 
+    # 🔥 Enrich cards with full card details
+    card_ids = [card["id"] for card in deck["cards"]]
+    db_cards = db.cards.find({"id": {"$in": card_ids}}, {"_id": 0})
+
+    # Create lookup dict
+    card_details = {c["id"]: c for c in db_cards}
+
+    enriched_cards = []
+    for c in deck["cards"]:
+        details = card_details.get(c["id"], {})
+        enriched_cards.append({
+            **c,
+            "image_url": details.get("images", {}).get("small", ""),
+            "set_name": details.get("set", {}).get("name", ""),
+            "type": details.get("cardType", ""),
+        })
+
+    deck["cards"] = enriched_cards
     return {"deck": deck}
