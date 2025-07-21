@@ -1,12 +1,7 @@
-import { useState, useEffect } from "react";
-import { useNavigate, useLocation, useParams } from "react-router-dom";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function DeckBuilder() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { deckName: editingDeckName } = useParams();
-  const isEditing = Boolean(editingDeckName);
-
   const [deckName, setDeckName] = useState("");
   const [query, setQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
@@ -15,18 +10,7 @@ export default function DeckBuilder() {
   const [deck, setDeck] = useState({});
   const [loading, setLoading] = useState(false);
   const [hoverCard, setHoverCard] = useState(null);
-
-  useEffect(() => {
-    if (isEditing && location.state?.deck) {
-      const existingDeck = location.state.deck;
-      setDeckName(existingDeck.name);
-      const prefilled = {};
-      existingDeck.cards.forEach((c) => {
-        prefilled[c.id] = { ...c, count: c.count };
-      });
-      setDeck(prefilled);
-    }
-  }, [isEditing, location.state]);
+  const navigate = useNavigate();
 
   const handleSearch = async (e, page = 1) => {
     e?.preventDefault();
@@ -97,12 +81,8 @@ export default function DeckBuilder() {
       const token = localStorage.getItem("token");
       if (!token) return navigate("/login");
 
-      const endpoint = isEditing
-        ? `${import.meta.env.VITE_API_URL}/auth/users/decks/${encodeURIComponent(editingDeckName)}`
-        : `${import.meta.env.VITE_API_URL}/auth/decks`;
-
-      const res = await fetch(endpoint, {
-        method: isEditing ? "PUT" : "POST",
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/decks`, {
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -118,7 +98,7 @@ export default function DeckBuilder() {
       });
 
       if (res.ok) {
-        alert(isEditing ? "✅ Deck updated successfully!" : "✅ Deck saved successfully!");
+        alert("✅ Deck saved successfully!");
         navigate("/account");
       } else {
         const error = await res.json();
@@ -134,15 +114,13 @@ export default function DeckBuilder() {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-4xl font-bold">
-            {isEditing ? `Edit Deck: ${editingDeckName}` : "New Deck Builder"}
-          </h1>
+          <h1 className="text-4xl font-bold">New Deck Builder</h1>
           <input
             type="text"
             placeholder="Deck Name"
             value={deckName}
             onChange={(e) => setDeckName(e.target.value)}
-            className="border rounded px-4 py-2 w-1/3"
+            className="border rounded px-4 py-2 w-1/3 bg-white text-gray-800"
           />
         </div>
 
@@ -156,7 +134,7 @@ export default function DeckBuilder() {
                 placeholder="Search for cards"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className="flex-1 border rounded px-4 py-2"
+                className="flex-1 border rounded px-4 py-2 bg-white text-gray-800"
               />
               <button
                 type="submit"
@@ -186,7 +164,9 @@ export default function DeckBuilder() {
                     />
                     <div>
                       <h3 className="text-lg font-medium">{card.name}</h3>
-                      <p className="text-gray-500 text-sm">{card.set?.name || card.set_name}</p>
+                      <p className="text-gray-500 text-sm">
+                        {card.set?.name || card.set_name} / {card.cardType || "Unknown"} / {card.rarity || "N/A"}
+                      </p>
                     </div>
 
                     {/* Hover Popup */}
@@ -264,7 +244,7 @@ export default function DeckBuilder() {
                     </div>
                     <button
                       onClick={() => removeFromDeck(c.id)}
-                      className="text-red-600 hover:underline text-sm"
+                      className="bg-black text-white px-3 py-1 rounded hover:bg-gray-800"
                     >
                       Remove
                     </button>
@@ -299,7 +279,7 @@ export default function DeckBuilder() {
               onClick={saveDeck}
               className="mt-6 w-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
             >
-              {isEditing ? "Update Deck" : "Save Deck"}
+              Save Deck
             </button>
           </div>
         </div>

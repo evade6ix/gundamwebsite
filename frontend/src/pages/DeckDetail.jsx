@@ -8,39 +8,57 @@ export default function DeckDetail() {
   const [loading, setLoading] = useState(true);
   const [hoverCard, setHoverCard] = useState(null);
 
-  useEffect(() => {
-    const fetchDeck = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          navigate("/login");
-          return;
-        }
+  const fetchDeck = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/login");
+        return;
+      }
 
-        const res = await fetch(
-          `${import.meta.env.VITE_API_URL}/auth/users/decks/${encodeURIComponent(deckName)}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/auth/users/decks/${encodeURIComponent(deckName)}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (res.ok) {
+        const data = await res.json();
+
+        // Enrich cards with full DB details
+        const enrichedCards = await Promise.all(
+          data.deck.cards.map(async (card) => {
+            const cardRes = await fetch(
+              `${import.meta.env.VITE_API_URL}/card/${encodeURIComponent(card.id)}`
+            );
+            if (cardRes.ok) {
+              const cardData = await cardRes.json();
+              return {
+                ...card,
+                ...cardData, // merge full DB card data
+              };
+            }
+            return card; // fallback to saved data
+          })
         );
 
-        if (res.ok) {
-          const data = await res.json();
-          setDeck(data.deck);
-        } else {
-          console.error("Deck not found");
-          navigate("/account");
-        }
-      } catch (err) {
-        console.error("Error fetching deck:", err);
+        setDeck({ ...data.deck, cards: enrichedCards });
+      } else {
+        console.error("Deck not found");
         navigate("/account");
-      } finally {
-        setLoading(false);
       }
-    };
+    } catch (err) {
+      console.error("Error fetching deck:", err);
+      navigate("/account");
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchDeck();
   }, [deckName, navigate]);
 
@@ -82,24 +100,19 @@ export default function DeckDetail() {
 
   const totalCards = deck.cards.reduce((sum, c) => sum + c.count, 0);
 
-  // 🖤 Color devotion (counts by color)
+  // 🖤 Color devotion (from enriched DB data)
   const colorCounts = {};
   deck.cards.forEach((c) => {
     const color = c.color || "Colorless";
     colorCounts[color] = (colorCounts[color] || 0) + c.count;
   });
 
-  // 📦 Card type counts
+  // 📦 Card type counts (from enriched DB data)
   const typeCounts = {};
   deck.cards.forEach((c) => {
     const type = c.cardType || "Unknown";
     typeCounts[type] = (typeCounts[type] || 0) + c.count;
   });
-
-  // 🌟 Most used card
-  const mostUsed = deck.cards.reduce((prev, curr) =>
-    prev.count > curr.count ? prev : curr
-  );
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -121,12 +134,11 @@ export default function DeckDetail() {
               Total Cards: <span className="font-bold">{totalCards}</span>
             </p>
             <button
-                onClick={() => navigate(`/decks/edit/${encodeURIComponent(deck.name)}`, { state: { deck } })}
-                className="w-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 mb-3"
+              onClick={() => alert("Edit deck coming soon!")}
+              className="w-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 mb-3"
             >
-                ✏️ Edit Deck
+              ✏️ Edit Deck
             </button>
-
             <button
               onClick={handleDelete}
               className="w-full bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
@@ -156,14 +168,6 @@ export default function DeckDetail() {
                   </li>
                 ))}
               </ul>
-            </div>
-
-            {/* 🌟 Most Used */}
-            <div className="mt-4">
-              <h3 className="text-xl font-semibold mb-2">Most Used Card</h3>
-              <p className="text-gray-700">
-                {mostUsed.name} ({mostUsed.count} copies)
-              </p>
             </div>
           </div>
 
