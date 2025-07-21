@@ -9,15 +9,37 @@ export default function CollectionView() {
   useEffect(() => {
     const fetchSharedCollection = async () => {
       try {
+        // Get shared collection from backend
         const res = await fetch(
           `${import.meta.env.VITE_API_URL}/auth/collection/shared/${encodeURIComponent(shareId)}`
         );
-        if (res.ok) {
-          const data = await res.json();
-          setCollection(data.cards || []);
-        } else {
+        if (!res.ok) {
           console.error("Failed to load shared collection");
+          setLoading(false);
+          return;
         }
+
+        const data = await res.json();
+        const rawCards = data.cards || [];
+
+        // Enrich cards with full details from DB
+        const enrichedCards = await Promise.all(
+          rawCards.map(async (card) => {
+            const cardRes = await fetch(
+              `${import.meta.env.VITE_API_URL}/card/${encodeURIComponent(card.id)}`
+            );
+            if (cardRes.ok) {
+              const cardData = await cardRes.json();
+              return {
+                ...card,
+                ...cardData, // merge full DB card data
+              };
+            }
+            return card; // fallback to saved data
+          })
+        );
+
+        setCollection(enrichedCards);
       } catch (err) {
         console.error("Error fetching shared collection:", err);
       } finally {

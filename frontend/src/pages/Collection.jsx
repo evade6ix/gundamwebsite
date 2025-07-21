@@ -9,9 +9,43 @@ export default function Collection() {
   const [totalPages, setTotalPages] = useState(1);
   const [collection, setCollection] = useState({});
   const [loading, setLoading] = useState(false);
+  const [loadingCollection, setLoadingCollection] = useState(true);
   const [shareLink, setShareLink] = useState(null);
 
   const CARDS_PER_PAGE = 20;
+
+  // ✅ Auto-load user's saved collection on page load
+  useEffect(() => {
+    const fetchCollection = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return navigate("/login");
+
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/collection`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          const savedCollection = {};
+          (data.cards || []).forEach((card) => {
+            savedCollection[card.id] = { ...card };
+          });
+          setCollection(savedCollection);
+        } else {
+          console.error("Failed to load collection");
+        }
+      } catch (err) {
+        console.error("Error fetching collection:", err);
+      } finally {
+        setLoadingCollection(false);
+      }
+    };
+
+    fetchCollection();
+  }, [navigate]);
 
   const handleSearch = async (e, page = 1) => {
     e?.preventDefault();
@@ -33,15 +67,41 @@ export default function Collection() {
     }
   };
 
+  const saveCollectionToDB = async (updatedCollection) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return navigate("/login");
+
+      await fetch(`${import.meta.env.VITE_API_URL}/auth/collection`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          cards: Object.values(updatedCollection).map((c) => ({
+            id: c.id,
+            name: c.name,
+            count: c.count,
+          })),
+        }),
+      });
+    } catch (err) {
+      console.error("Failed to auto-save collection:", err);
+    }
+  };
+
   const addToCollection = (card) => {
     const currentCount = collection[card.id]?.count || 0;
-    setCollection({
+    const updatedCollection = {
       ...collection,
       [card.id]: {
         ...card,
         count: currentCount + 1, // ✅ Unlimited copies
       },
-    });
+    };
+    setCollection(updatedCollection);
+    saveCollectionToDB(updatedCollection);
   };
 
   const removeFromCollection = (cardId) => {
@@ -52,37 +112,7 @@ export default function Collection() {
       delete updatedCollection[cardId];
     }
     setCollection(updatedCollection);
-  };
-
-  const saveCollection = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) return navigate("/login");
-
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/collection`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          cards: Object.values(collection).map((c) => ({
-            id: c.id,
-            name: c.name,
-            count: c.count,
-          })),
-        }),
-      });
-
-      if (res.ok) {
-        alert("✅ Collection saved successfully!");
-      } else {
-        const error = await res.json();
-        alert(`❌ ${error.detail}`);
-      }
-    } catch (err) {
-      console.error("Failed to save collection:", err);
-    }
+    saveCollectionToDB(updatedCollection);
   };
 
   const shareCollection = async () => {
@@ -117,26 +147,22 @@ export default function Collection() {
     }
   };
 
+  if (loadingCollection) {
+    return <p className="text-center mt-8">Loading your collection...</p>;
+  }
+
   return (
     <div className="bg-gray-50 min-h-screen">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-4xl font-bold">My Collection</h1>
-          <div className="flex gap-2">
-            <button
-              onClick={saveCollection}
-              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-            >
-              Save Collection
-            </button>
-            <button
-              onClick={shareCollection}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-            >
-              Share Collection
-            </button>
-          </div>
+          <button
+            onClick={shareCollection}
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          >
+            Share Collection
+          </button>
         </div>
 
         {shareLink && (
@@ -178,19 +204,32 @@ export default function Collection() {
             {searchResults.map((card) => (
               <div
                 key={card.id}
-                className="p-2 border rounded hover:shadow cursor-pointer"
-                onClick={() => addToCollection(card)}
+                className="p-2 border rounded hover:shadow"
               >
                 <img
                   src={card.images?.small || card.image_url || "/placeholder.png"}
                   alt={card.name}
-                  className="w-full h-40 object-contain rounded"
+                  className="w-full h-40 object-contain rounded cursor-pointer"
+                  onClick={() => addToCollection(card)}
                 />
                 <div className="mt-2">
                   <h3 className="text-lg font-medium">{card.name}</h3>
                   <p className="text-gray-500 text-sm">
                     {card.set?.name || card.set_name} / {card.cardType || "Unknown"} / {card.rarity || "N/A"}
                   </p>
+                  {collection[card.id] && (
+                    <>
+                      <p className="text-gray-800 text-sm mt-1">
+                        Copies: {collection[card.id].count}
+                      </p>
+                      <button
+                        onClick={() => removeFromCollection(card.id)}
+                        className="mt-2 bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700"
+                      >
+                        Remove
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             ))}
