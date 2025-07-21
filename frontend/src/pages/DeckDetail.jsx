@@ -6,7 +6,6 @@ export default function DeckDetail() {
   const navigate = useNavigate();
   const [deck, setDeck] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [hoverCard, setHoverCard] = useState(null);
 
   const fetchDeck = async () => {
     try {
@@ -90,6 +89,10 @@ export default function DeckDetail() {
     }
   };
 
+  const handleEdit = () => {
+    navigate(`/decks/edit/${encodeURIComponent(deck.name)}`);
+  };
+
   if (loading) {
     return <p className="text-center mt-8">Loading deck...</p>;
   }
@@ -120,7 +123,6 @@ export default function DeckDetail() {
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-4xl font-bold text-gray-800">{deck.name}</h1>
-          <p className="text-lg text-gray-600">🃏 {totalCards} cards</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -134,7 +136,7 @@ export default function DeckDetail() {
               Total Cards: <span className="font-bold">{totalCards}</span>
             </p>
             <button
-              onClick={() => alert("Edit deck coming soon!")}
+              onClick={handleEdit}
               className="w-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 mb-3"
             >
               ✏️ Edit Deck
@@ -173,14 +175,14 @@ export default function DeckDetail() {
 
           {/* Right Panel */}
           <div className="lg:col-span-2 bg-white shadow rounded-lg p-4 overflow-y-auto max-h-[70vh]">
-            <h2 className="text-2xl font-semibold mb-4">Cards</h2>
+            <h2 className="text-2xl font-semibold mb-4">
+              Cards ({totalCards})
+            </h2>
             <ul className="space-y-3">
               {deck.cards.map((card, idx) => (
                 <li
                   key={idx}
                   className="flex items-center gap-4 border rounded p-3 hover:shadow transition relative"
-                  onMouseEnter={() => setHoverCard(card)}
-                  onMouseLeave={() => setHoverCard(null)}
                 >
                   <img
                     src={card.images?.small || card.image_url || "/placeholder.png"}
@@ -191,24 +193,6 @@ export default function DeckDetail() {
                     <h3 className="text-lg font-medium">{card.name}</h3>
                     <p className="text-gray-500">Copies: {card.count}</p>
                   </div>
-
-                  {/* Hover Popup */}
-                  {hoverCard?.id === card.id && (
-                    <div className="fixed z-50 left-[50%] top-[50%] transform -translate-x-1/2 -translate-y-1/2 bg-white border rounded shadow-lg p-2 w-72">
-                      <img
-                        src={card.images?.large || card.image_url || "/placeholder.png"}
-                        alt={card.name}
-                        className="w-full h-auto rounded mb-2"
-                      />
-                      <h4 className="font-bold text-lg">{card.name}</h4>
-                      {card.rarity && (
-                        <p className="text-gray-600 text-sm">Rarity: {card.rarity}</p>
-                      )}
-                      {card.cardType && (
-                        <p className="text-gray-600 text-sm">Type: {card.cardType}</p>
-                      )}
-                    </div>
-                  )}
                 </li>
               ))}
             </ul>
