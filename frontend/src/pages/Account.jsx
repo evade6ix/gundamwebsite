@@ -10,6 +10,24 @@ export default function Account() {
   const [loading, setLoading] = useState(true);
   const [hoverCard, setHoverCard] = useState(null);
 
+  // 🔥 Fetch full details for a single card
+  const fetchCardDetails = async (cardId) => {
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/card/${encodeURIComponent(cardId)}`
+      );
+      if (res.ok) {
+        const data = await res.json();
+        return data; // full card details
+      }
+      console.error(`Failed to fetch card ${cardId}`);
+      return null;
+    } catch (err) {
+      console.error("Error fetching card details:", err);
+      return null;
+    }
+  };
+
   useEffect(() => {
     if (!userEmail) {
       navigate("/login");
@@ -26,7 +44,23 @@ export default function Account() {
         });
         if (res.ok) {
           const data = await res.json();
-          setDecks(data.decks || []);
+
+          // 🔥 Enrich deck cards with full details
+          const enrichedDecks = await Promise.all(
+            data.decks.map(async (deck) => {
+              const enrichedCards = await Promise.all(
+                deck.cards.map(async (card) => {
+                  const fullDetails = await fetchCardDetails(card.id);
+                  return {
+                    ...card,
+                    ...fullDetails, // merge full DB card data
+                  };
+                })
+              );
+              return { ...deck, cards: enrichedCards };
+            })
+          );
+          setDecks(enrichedDecks);
         } else {
           console.error("Failed to fetch decks");
         }
@@ -90,7 +124,7 @@ export default function Account() {
                       onMouseLeave={() => setHoverCard(null)}
                     >
                       <img
-                        src={card.image_url}
+                        src={card.images?.small || "/placeholder.png"}
                         alt={card.name}
                         className="w-16 h-20 object-contain rounded border"
                       />
@@ -99,19 +133,24 @@ export default function Account() {
                       {hoverCard?.id === card.id && (
                         <div className="absolute z-50 left-20 top-0 bg-white border rounded shadow-lg p-2 w-64">
                           <img
-                            src={card.image_url}
+                            src={card.images?.large || "/placeholder.png"}
                             alt={card.name}
                             className="w-full h-auto rounded mb-2"
                           />
                           <h4 className="font-bold text-lg">{card.name}</h4>
-                          {card.set_name && (
+                          {card.set?.name && (
                             <p className="text-gray-500 text-sm mb-1">
-                              Set: {card.set_name}
+                              Set: {card.set.name}
                             </p>
                           )}
-                          {card.type && (
+                          {card.rarity && (
                             <p className="text-gray-600 text-sm">
-                              Type: {card.type}
+                              Rarity: {card.rarity}
+                            </p>
+                          )}
+                          {card.cardType && (
+                            <p className="text-gray-600 text-sm">
+                              Type: {card.cardType}
                             </p>
                           )}
                         </div>
