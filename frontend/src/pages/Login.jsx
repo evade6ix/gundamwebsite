@@ -23,7 +23,7 @@ export default function Login() {
       localStorage.setItem("token", data.access_token); // 🟢 Save JWT
       localStorage.setItem("userName", data.name);       // 🟢 Save user's name
       setMessage("✅ Login successful! Redirecting...");
-      setTimeout(() => navigate("/account"), 2000);
+      navigate("/account", { replace: true });
     } else {
       setMessage(`❌ ${data.detail || "Failed to login."}`);
     }
