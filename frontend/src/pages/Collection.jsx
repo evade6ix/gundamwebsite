@@ -1,59 +1,223 @@
-import { useEffect, useState } from "react";
-import { getUserFromToken } from "../utils/auth";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function Collection() {
-  const [collection, setCollection] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const user = getUserFromToken();
+  const navigate = useNavigate();
+  const [query, setQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [collection, setCollection] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [shareLink, setShareLink] = useState(null);
 
-  useEffect(() => {
-    async function fetchCollection() {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/me`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+  const CARDS_PER_PAGE = 20;
+
+  const handleSearch = async (e, page = 1) => {
+    e?.preventDefault();
+    if (!query.trim()) return;
+
+    try {
+      setLoading(true);
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/cards?name=${encodeURIComponent(query)}&page=${page}&limit=${CARDS_PER_PAGE}`
+      );
       const data = await res.json();
-      setCollection(data.collection || []);
+      setSearchResults(data.cards || []);
+      setCurrentPage(data.page || 1);
+      setTotalPages(data.totalPages || 1);
+    } catch (err) {
+      console.error("Error searching cards:", err);
+    } finally {
       setLoading(false);
     }
+  };
 
-    if (user) {
-      fetchCollection();
+  const addToCollection = (card) => {
+    const currentCount = collection[card.id]?.count || 0;
+    setCollection({
+      ...collection,
+      [card.id]: {
+        ...card,
+        count: currentCount + 1, // ✅ Unlimited copies
+      },
+    });
+  };
+
+  const removeFromCollection = (cardId) => {
+    const updatedCollection = { ...collection };
+    if (updatedCollection[cardId].count > 1) {
+      updatedCollection[cardId].count -= 1;
     } else {
-      setLoading(false);
+      delete updatedCollection[cardId];
     }
-  }, [user]);
+    setCollection(updatedCollection);
+  };
 
-  if (!user) {
-    return (
-      <div className="text-center mt-10 text-lg text-gray-600">
-        Please log in to view your collection.
-      </div>
-    );
-  }
+  const saveCollection = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return navigate("/login");
+
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/collection`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          cards: Object.values(collection).map((c) => ({
+            id: c.id,
+            name: c.name,
+            count: c.count,
+          })),
+        }),
+      });
+
+      if (res.ok) {
+        alert("✅ Collection saved successfully!");
+      } else {
+        const error = await res.json();
+        alert(`❌ ${error.detail}`);
+      }
+    } catch (err) {
+      console.error("Failed to save collection:", err);
+    }
+  };
+
+  const shareCollection = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return navigate("/login");
+
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/collection/share`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          cards: Object.values(collection).map((c) => ({
+            id: c.id,
+            name: c.name,
+            count: c.count,
+          })),
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setShareLink(`${window.location.origin}/collection/view/${data.shareId}`);
+      } else {
+        const error = await res.json();
+        alert(`❌ ${error.detail}`);
+      }
+    } catch (err) {
+      console.error("Failed to share collection:", err);
+    }
+  };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Your Collection</h1>
-      {loading ? (
-        <p className="text-gray-600">Loading collection...</p>
-      ) : collection.length === 0 ? (
-        <p className="text-gray-600">No cards in your collection yet.</p>
-      ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          {collection.map((card, index) => (
-            <div key={index} className="bg-white shadow rounded p-2 text-center">
-              <img
-                src={card.image_url || "/placeholder.jpg"}
-                alt={card.name}
-                className="w-full h-40 object-contain mb-2"
-              />
-              <p className="text-sm font-medium">{card.name}</p>
-            </div>
-          ))}
+    <div className="bg-gray-50 min-h-screen">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-4xl font-bold">My Collection</h1>
+          <div className="flex gap-2">
+            <button
+              onClick={saveCollection}
+              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+            >
+              Save Collection
+            </button>
+            <button
+              onClick={shareCollection}
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            >
+              Share Collection
+            </button>
+          </div>
         </div>
-      )}
+
+        {shareLink && (
+          <div className="mb-4">
+            <p className="text-green-700">✅ Shareable Link:</p>
+            <a
+              href={shareLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 underline"
+            >
+              {shareLink}
+            </a>
+          </div>
+        )}
+
+        {/* Search */}
+        <form onSubmit={handleSearch} className="flex gap-2 mb-4">
+          <input
+            type="text"
+            placeholder="Search for cards"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="flex-1 border rounded px-4 py-2 bg-white text-gray-800"
+          />
+          <button
+            type="submit"
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          >
+            Search
+          </button>
+        </form>
+
+        {/* Search Results */}
+        {loading ? (
+          <p className="text-gray-500">Searching...</p>
+        ) : (
+          <div className="grid grid-cols-5 gap-4">
+            {searchResults.map((card) => (
+              <div
+                key={card.id}
+                className="p-2 border rounded hover:shadow cursor-pointer"
+                onClick={() => addToCollection(card)}
+              >
+                <img
+                  src={card.images?.small || card.image_url || "/placeholder.png"}
+                  alt={card.name}
+                  className="w-full h-40 object-contain rounded"
+                />
+                <div className="mt-2">
+                  <h3 className="text-lg font-medium">{card.name}</h3>
+                  <p className="text-gray-500 text-sm">
+                    {card.set?.name || card.set_name} / {card.cardType || "Unknown"} / {card.rarity || "N/A"}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Pagination */}
+        <div className="flex justify-between items-center mt-4">
+          <button
+            disabled={currentPage === 1}
+            onClick={(e) => handleSearch(e, currentPage - 1)}
+            className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
+          >
+            ← Prev
+          </button>
+          <span className="text-gray-600">
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            disabled={currentPage === totalPages}
+            onClick={(e) => handleSearch(e, currentPage + 1)}
+            className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
+          >
+            Next →
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

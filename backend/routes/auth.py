@@ -7,6 +7,7 @@ from jose import jwt, JWTError, ExpiredSignatureError
 from datetime import datetime, timedelta
 import os, smtplib
 from email.mime.text import MIMEText
+from uuid import uuid4
 
 # Environment variables
 JWT_SECRET = os.getenv("JWT_SECRET", "super_secret_jwt_key")
@@ -131,9 +132,8 @@ def reset_password(req: ResetPasswordRequest):
     return {"msg": "✅ Password reset successful."}
 
 
-# ✅ NEW: Add card to user collection
 @router.post("/collection")
-def add_to_collection(request: Request, card: dict = Body(...)):
+def save_collection(request: Request, collection: dict = Body(...)):
     token = request.headers.get("Authorization", "").replace("Bearer ", "")
     user_email = verify_token(token)
     if not user_email:
@@ -141,12 +141,41 @@ def add_to_collection(request: Request, card: dict = Body(...)):
 
     result = users_collection.update_one(
         {"email": user_email},
-        {"$push": {"collection": card}},
+        {"$set": {"collection": collection.get("cards", [])}},
         upsert=True
     )
+
     if result.modified_count == 0 and result.upserted_id is None:
-        raise HTTPException(status_code=500, detail="Failed to add card to collection.")
-    return {"msg": "✅ Card added to collection."}
+        raise HTTPException(status_code=500, detail="Failed to save collection.")
+
+    return {"msg": "✅ Collection saved successfully."}
+
+@router.get("/collection/shared/{share_id}")
+def get_shared_collection(share_id: str):
+    shared = db["shared_collections"].find_one({"share_id": share_id})
+    if not shared:
+        raise HTTPException(status_code=404, detail="Shared collection not found.")
+    return {"cards": shared["cards"]}
+
+
+
+@router.post("/collection/share")
+def share_collection(request: Request, collection: dict = Body(...)):
+    token = request.headers.get("Authorization", "").replace("Bearer ", "")
+    user_email = verify_token(token)
+    if not user_email:
+        raise HTTPException(status_code=401, detail="Invalid token.")
+
+    share_id = str(uuid4())
+    db["shared_collections"].insert_one({
+        "share_id": share_id,
+        "cards": collection.get("cards", []),
+        "owner_email": user_email,
+        "created_at": datetime.utcnow()
+    })
+
+    return {"shareId": share_id}
+
 
 
 # ✅ NEW: Save user deck

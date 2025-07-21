@@ -17,6 +17,9 @@ export default function Navbar() {
           <Link to="/search" className="hover:text-blue-600">Search</Link>
           {user ? (
             <>
+              <Link to="/collection" className="hover:text-blue-600">
+                My Collection
+              </Link>
               <Link to="/account" className="hover:text-blue-600">
                 {user}
               </Link>

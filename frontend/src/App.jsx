@@ -8,6 +8,8 @@ import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Account from "./pages/Account";
+import Collection from "./pages/Collection"; // 🟢 New
+import CollectionView from "./pages/CollectionView"; // 🟢 New
 import CollectionAdd from "./pages/CollectionAdd";
 import DeckBuilder from "./pages/DeckBuilder";
 import DeckDetail from "./pages/DeckDetail";
@@ -21,11 +23,13 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/search" element={<Search />} />
           <Route path="/card/:id" element={<Card />} />
-          <Route path="/login" element={<Login />} /> {/* 🟢 Login moved to /login */}
-          <Route path="/account" element={<Account />} /> {/* 🟢 Account is now correct */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/account" element={<Account />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/collection" element={<Collection />} /> {/* 🟢 User Collection */}
+          <Route path="/collection/view/:shareId" element={<CollectionView />} /> {/* 🟢 Shared View */}
           <Route path="/collection/add" element={<CollectionAdd />} />
           <Route path="/decks/new" element={<DeckBuilder />} />
           <Route path="/decks/:deckName" element={<DeckDetail />} />
