@@ -1,8 +1,10 @@
-import { Link } from "react-router-dom";
-import { getUserName, logout } from "../utils/auth";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { logout as logoutUtil } from "../utils/auth";
 
 export default function Navbar() {
-  const userName = getUserName();
+  const navigate = useNavigate();
+  const { user, loginUser, logoutUser } = useAuth();
 
   return (
     <nav className="bg-white shadow-md">
@@ -13,15 +15,16 @@ export default function Navbar() {
         <div className="space-x-6 text-gray-700">
           <Link to="/" className="hover:text-blue-600">Home</Link>
           <Link to="/search" className="hover:text-blue-600">Search</Link>
-          {userName ? (
+          {user ? (
             <>
               <Link to="/account" className="hover:text-blue-600">
-                {userName}
+                {user}
               </Link>
               <button
                 onClick={() => {
-                  logout();
-                  window.location.href = "/"; // Force refresh to clear state
+                  logoutUtil();
+                  logoutUser(); // Update context state
+                  navigate("/"); // Go home without page reload
                 }}
                 className="hover:text-red-600 ml-2"
               >

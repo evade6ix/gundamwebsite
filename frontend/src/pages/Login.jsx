@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -7,6 +8,7 @@ export default function Login() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { loginUser } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19,9 +21,15 @@ export default function Login() {
         body: JSON.stringify({ email, password }),
       });
       const data = await res.json();
+
       if (res.ok) {
+        // Save token and username to localStorage
         localStorage.setItem("token", data.access_token);
         localStorage.setItem("userName", data.name);
+
+        // ✅ Update global auth state
+        loginUser(data.name);
+
         setMessage("✅ Login successful! Redirecting...");
         navigate("/account", { replace: true });
       } else {
