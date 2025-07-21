@@ -172,30 +172,48 @@ def get_collection(request: Request):
 
 @router.get("/collection/shared/{share_id}")
 def get_shared_collection(share_id: str):
-    shared = db["shared_collections"].find_one({"share_id": share_id})
+    shared = db.shared_collections.find_one({"share_id": share_id})
     if not shared:
         raise HTTPException(status_code=404, detail="Shared collection not found.")
-    return {"cards": shared["cards"]}
+
+    # Fetch the live collection from users_collection
+    user = users_collection.find_one({"email": shared["email"]})
+    if not user or "collection" not in user:
+        return {"cards": [], "owner": shared.get("owner_name", "Anonymous")}
+
+    return {
+        "cards": user["collection"],
+        "owner": shared.get("owner_name", "Anonymous")
+    }
 
 
 
 @router.post("/collection/share")
-def share_collection(request: Request, collection: dict = Body(...)):
+def share_collection(request: Request):
     token = request.headers.get("Authorization", "").replace("Bearer ", "")
     user_email = verify_token(token)
     if not user_email:
         raise HTTPException(status_code=401, detail="Invalid token.")
 
-    share_id = str(uuid4())
-    db["shared_collections"].insert_one({
-        "share_id": share_id,
-        "cards": collection.get("cards", []),
-        "owner_email": user_email,
-        "created_at": datetime.utcnow()
-    })
+    user = users_collection.find_one({"email": user_email})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found.")
+
+    # Reuse their email or a hashed version as the share ID
+    share_id = user_email.replace("@", "_at_").replace(".", "_dot_")
+
+    db.shared_collections.update_one(
+        {"share_id": share_id},
+        {"$set": {
+            "share_id": share_id,
+            "owner_name": user.get("name", "Anonymous"),
+            "email": user_email,
+            "created_at": datetime.utcnow()
+        }},
+        upsert=True
+    )
 
     return {"shareId": share_id}
-
 
 
 # ✅ NEW: Save user deck
