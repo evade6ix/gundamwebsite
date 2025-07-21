@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends, status, Request
+from fastapi import APIRouter, HTTPException, Depends, status, Request, Body
 from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel, EmailStr
 from pymongo import MongoClient
@@ -76,7 +76,7 @@ def register(user: UserRegister):
         raise HTTPException(status_code=400, detail="Email already registered.")
     hashed_pw = bcrypt.hash(user.password)
     users_collection.insert_one({
-        "name": user.name,  # Save name too
+        "name": user.name,
         "email": user.email,
         "password": hashed_pw
     })
@@ -92,9 +92,8 @@ def login(user: UserLogin):
     return {
         "access_token": token,
         "token_type": "bearer",
-        "name": db_user["name"]  # 🟢 Return name here
+        "name": db_user["name"]  # 🟢 Return name
     }
-
 
 
 @router.post("/forgot-password")
@@ -130,3 +129,53 @@ def reset_password(req: ResetPasswordRequest):
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="User not found.")
     return {"msg": "✅ Password reset successful."}
+
+
+# ✅ NEW: Add card to user collection
+@router.post("/collection")
+def add_to_collection(request: Request, card: dict = Body(...)):
+    token = request.headers.get("Authorization", "").replace("Bearer ", "")
+    user_email = verify_token(token)
+    if not user_email:
+        raise HTTPException(status_code=401, detail="Invalid token.")
+
+    result = users_collection.update_one(
+        {"email": user_email},
+        {"$push": {"collection": card}},
+        upsert=True
+    )
+    if result.modified_count == 0 and result.upserted_id is None:
+        raise HTTPException(status_code=500, detail="Failed to add card to collection.")
+    return {"msg": "✅ Card added to collection."}
+
+
+# ✅ NEW: Save user deck
+@router.post("/decks")
+def save_deck(request: Request, deck: dict = Body(...)):
+    token = request.headers.get("Authorization", "").replace("Bearer ", "")
+    user_email = verify_token(token)
+    if not user_email:
+        raise HTTPException(status_code=401, detail="Invalid token.")
+
+    deck_name = deck.get("name")
+    cards = deck.get("cards", [])
+
+    if not deck_name or not cards:
+        raise HTTPException(status_code=400, detail="Deck name and cards are required.")
+    if len(cards) > 50:
+        raise HTTPException(status_code=400, detail="Deck cannot exceed 50 cards.")
+
+    deck_data = {
+        "name": deck_name,
+        "cards": cards,
+        "created_at": datetime.utcnow()
+    }
+
+    result = users_collection.update_one(
+        {"email": user_email},
+        {"$push": {"decks": deck_data}},
+        upsert=True
+    )
+    if result.modified_count == 0 and result.upserted_id is None:
+        raise HTTPException(status_code=500, detail="Failed to save deck.")
+    return {"msg": "✅ Deck saved successfully."}
