@@ -180,8 +180,7 @@ def save_deck(request: Request, deck: dict = Body(...)):
         raise HTTPException(status_code=500, detail="Failed to save deck.")
     return {"msg": "✅ Deck saved successfully."}
 
-# ✅ NEW: Get user decks
-@router.get("/decks")
+@router.get("/users/decks")
 def get_user_decks(request: Request):
     token = request.headers.get("Authorization", "").replace("Bearer ", "")
     user_email = verify_token(token)
@@ -193,6 +192,7 @@ def get_user_decks(request: Request):
         raise HTTPException(status_code=404, detail="User not found.")
 
     return {"decks": user.get("decks", [])}
+
 
 # ✅ NEW: Get a single user deck
 @router.get("/users/decks/{deck_name}")
