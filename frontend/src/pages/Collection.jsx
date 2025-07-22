@@ -128,10 +128,14 @@ export default function Collection() {
     saveCollectionToDB(updatedCollection);
   };
 
-  // ✅ Determine which cards to display
   const displayedCards = showCollectionOnly
-    ? Object.values(collection) // 👈 Always show all saved collection cards
-    : searchResults;
+  ? Object.values(collection).map((c) => {
+      // Try to find full card details in searchResults
+      const fullCard = searchResults.find((card) => card.id === c.id);
+      return fullCard ? { ...fullCard, count: c.count } : c;
+    })
+  : searchResults;
+
 
   if (loadingCollection) {
     return <p className="text-center mt-8">Loading your collection...</p>;
