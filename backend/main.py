@@ -105,3 +105,22 @@ def health():
     return {"status": "ok"}
 
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
+
+@app.get("/filters")
+def get_filters():
+    logger.info("📡 GET /filters called")
+    try:
+        db = get_db()
+        sets = db.cards.distinct("set.name")
+        types = db.cards.distinct("cardType")
+        rarities = db.cards.distinct("rarity")
+
+        logger.debug(f"✅ Found {len(sets)} sets, {len(types)} types, {len(rarities)} rarities")
+        return {
+            "sets": sorted(filter(None, sets)),      # Remove None and sort
+            "types": sorted(filter(None, types)),
+            "rarities": sorted(filter(None, rarities)),
+        }
+    except Exception as e:
+        logger.error(f"❌ Error in /filters: {e}")
+        return {"error": str(e)}

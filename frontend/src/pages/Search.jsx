@@ -3,6 +3,12 @@ import { Link, useSearchParams } from "react-router-dom";
 
 export default function Search() {
   const [cards, setCards] = useState([]);
+  const [filters, setFilters] = useState({ sets: [], types: [], rarities: [] });
+  const [selectedFilters, setSelectedFilters] = useState({
+    sets: [],
+    types: [],
+    rarities: [],
+  });
   const [loading, setLoading] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get("q") || "";
@@ -13,13 +19,39 @@ export default function Search() {
     totalPages: 1,
   });
 
+  // 🟢 Fetch filters on first load
+  useEffect(() => {
+    async function fetchFilters() {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/filters`);
+        const data = await res.json();
+        setFilters(data);
+      } catch (err) {
+        console.error("Failed to fetch filters:", err);
+      }
+    }
+    fetchFilters();
+  }, []);
+
+  // 🟢 Fetch cards whenever query or filters change
+  useEffect(() => {
+    fetchCards(page);
+  }, [query, page, selectedFilters]);
+
   async function fetchCards(pageNumber = 1) {
-    if (!query) return;
     setLoading(true);
+
+    const params = new URLSearchParams();
+    if (query) params.append("name", query);
+    params.append("page", pageNumber);
+    params.append("limit", 30);
+
+    if (selectedFilters.sets.length) params.append("set", selectedFilters.sets.join(","));
+    if (selectedFilters.types.length) params.append("type", selectedFilters.types.join(","));
+    if (selectedFilters.rarities.length) params.append("rarity", selectedFilters.rarities.join(","));
+
     try {
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/cards?name=${query}&page=${pageNumber}&limit=30`
-      );
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/cards?${params.toString()}`);
       const data = await res.json();
       setCards(data.cards || []);
       setPagination({
@@ -33,14 +65,9 @@ export default function Search() {
     }
   }
 
-  useEffect(() => {
-    fetchCards(page);
-  }, [query, page]);
-
   function handleSearch(e) {
     e.preventDefault();
-    const form = e.target;
-    const value = form.search.value.trim();
+    const value = e.target.search.value.trim();
     if (value) setSearchParams({ q: value, page: 1 });
   }
 
@@ -48,9 +75,75 @@ export default function Search() {
     setSearchParams({ q: query, page: newPage });
   }
 
+  function toggleFilter(category, value) {
+    setSelectedFilters((prev) => {
+      const updated = { ...prev };
+      if (updated[category].includes(value)) {
+        updated[category] = updated[category].filter((v) => v !== value);
+      } else {
+        updated[category] = [...updated[category], value];
+      }
+      return updated;
+    });
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Sidebar Filters */}
+      <aside className="w-64 bg-white p-4 border-r hidden md:block">
+        <h2 className="text-xl font-semibold mb-4">Filters</h2>
+
+        {/* Sets */}
+        <div className="mb-6">
+          <h3 className="font-medium mb-2">Sets</h3>
+          {filters.sets.map((set) => (
+            <label key={set} className="block text-gray-700">
+              <input
+                type="checkbox"
+                checked={selectedFilters.sets.includes(set)}
+                onChange={() => toggleFilter("sets", set)}
+                className="mr-2"
+              />
+              {set}
+            </label>
+          ))}
+        </div>
+
+        {/* Types */}
+        <div className="mb-6">
+          <h3 className="font-medium mb-2">Types</h3>
+          {filters.types.map((type) => (
+            <label key={type} className="block text-gray-700">
+              <input
+                type="checkbox"
+                checked={selectedFilters.types.includes(type)}
+                onChange={() => toggleFilter("types", type)}
+                className="mr-2"
+              />
+              {type}
+            </label>
+          ))}
+        </div>
+
+        {/* Rarities */}
+        <div>
+          <h3 className="font-medium mb-2">Rarities</h3>
+          {filters.rarities.map((rarity) => (
+            <label key={rarity} className="block text-gray-700">
+              <input
+                type="checkbox"
+                checked={selectedFilters.rarities.includes(rarity)}
+                onChange={() => toggleFilter("rarities", rarity)}
+                className="mr-2"
+              />
+              {rarity}
+            </label>
+          ))}
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <div className="flex-1 container mx-auto px-4 py-8">
         <form
           onSubmit={handleSearch}
           className="flex justify-center mb-8 gap-2"
@@ -75,7 +168,7 @@ export default function Search() {
           <p className="text-center text-lg text-gray-600">Loading cards...</p>
         )}
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
           {cards.map((card) => (
             <Link
               key={card.id}
