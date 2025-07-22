@@ -128,9 +128,9 @@ export default function Collection() {
     saveCollectionToDB(updatedCollection);
   };
 
-  // ✅ Filter search results if "showCollectionOnly" is ON
+  // ✅ Determine which cards to display
   const displayedCards = showCollectionOnly
-    ? searchResults.filter((card) => collection[card.id])
+    ? Object.values(collection) // 👈 Always show all saved collection cards
     : searchResults;
 
   if (loadingCollection) {
@@ -175,21 +175,23 @@ export default function Collection() {
         </div>
 
         {/* Search */}
-        <form onSubmit={handleSearch} className="flex gap-2 mb-4">
-          <input
-            type="text"
-            placeholder="Search for cards"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className="flex-1 border rounded px-4 py-2 bg-white text-gray-800"
-          />
-          <button
-            type="submit"
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-          >
-            Search
-          </button>
-        </form>
+        {!showCollectionOnly && (
+          <form onSubmit={handleSearch} className="flex gap-2 mb-4">
+            <input
+              type="text"
+              placeholder="Search for cards"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="flex-1 border rounded px-4 py-2 bg-white text-gray-800"
+            />
+            <button
+              type="submit"
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            >
+              Search
+            </button>
+          </form>
+        )}
 
         {/* Search Results */}
         {loading ? (
