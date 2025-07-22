@@ -90,57 +90,33 @@ export default function Search() {
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar Filters */}
-      <aside className="w-64 bg-white p-4 border-r hidden md:block">
-        <h2 className="text-xl font-semibold mb-4">Filters</h2>
+<aside className="w-72 bg-white p-4 border-r hidden md:block">
+  <h2 className="text-xl font-bold mb-4">Filters</h2>
 
-        {/* Sets */}
-        <div className="mb-6">
-          <h3 className="font-medium mb-2">Sets</h3>
-          {filters.sets.map((set) => (
-            <label key={set} className="block text-gray-700">
-              <input
-                type="checkbox"
-                checked={selectedFilters.sets.includes(set)}
-                onChange={() => toggleFilter("sets", set)}
-                className="mr-2"
-              />
-              {set}
-            </label>
-          ))}
-        </div>
+  {/* Helper Component for filter groups */}
+  {["sets", "types", "rarities"].map((category) => (
+    <div key={category} className="mb-6">
+      <h3 className="font-semibold mb-2 capitalize">{category}</h3>
+      <div className="max-h-48 overflow-y-auto space-y-2">
+        {filters[category].map((option) => (
+          <label
+            key={option}
+            className="flex items-center gap-2 p-2 rounded-lg border hover:bg-gray-100 cursor-pointer transition"
+          >
+            <input
+              type="checkbox"
+              className="accent-blue-600"
+              checked={selectedFilters[category].includes(option)}
+              onChange={() => toggleFilter(category, option)}
+            />
+            <span className="text-gray-800">{option}</span>
+          </label>
+        ))}
+      </div>
+    </div>
+  ))}
+</aside>
 
-        {/* Types */}
-        <div className="mb-6">
-          <h3 className="font-medium mb-2">Types</h3>
-          {filters.types.map((type) => (
-            <label key={type} className="block text-gray-700">
-              <input
-                type="checkbox"
-                checked={selectedFilters.types.includes(type)}
-                onChange={() => toggleFilter("types", type)}
-                className="mr-2"
-              />
-              {type}
-            </label>
-          ))}
-        </div>
-
-        {/* Rarities */}
-        <div>
-          <h3 className="font-medium mb-2">Rarities</h3>
-          {filters.rarities.map((rarity) => (
-            <label key={rarity} className="block text-gray-700">
-              <input
-                type="checkbox"
-                checked={selectedFilters.rarities.includes(rarity)}
-                onChange={() => toggleFilter("rarities", rarity)}
-                className="mr-2"
-              />
-              {rarity}
-            </label>
-          ))}
-        </div>
-      </aside>
 
       {/* Main Content */}
       <div className="flex-1 container mx-auto px-4 py-8">
