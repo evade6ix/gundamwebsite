@@ -4,7 +4,6 @@ import os
 
 router = APIRouter()
 
-# MongoDB connection
 client = MongoClient(os.getenv("MONGO_URI"))
 db = client["gundam_tcg"]
 cards_collection = db["cards"]
@@ -20,30 +19,32 @@ def get_cards(
 ):
     query = {}
 
-    # 🔹 Search by name (case-insensitive)
+    # 🔹 Search by name (case-insensitive partial match)
     if name:
         query["name"] = {"$regex": name, "$options": "i"}
 
-    # 🔹 Filter by set(s) - case-insensitive partial match
+    # 🔹 Filter by set(s)
     if set:
-        set_regex = "|".join([f".*{s.strip()}.*" for s in set.split(",")])
-        query["set.name"] = {"$regex": set_regex, "$options": "i"}
+        sets = [s.strip() for s in set.split(",")]
+        query["set.name"] = {"$in": sets}
 
-    # 🔹 Filter by type(s) - case-insensitive partial match
+    # 🔹 Filter by type(s)
     if type:
-        type_regex = "|".join([f".*{t.strip()}.*" for t in type.split(",")])
-        query["cardType"] = {"$regex": type_regex, "$options": "i"}
+        types = [t.strip() for t in type.split(",")]
+        query["cardType"] = {"$in": types}
 
-    # 🔹 Filter by rarity(ies) - case-insensitive partial match
+    # 🔹 Filter by rarity(ies)
     if rarity:
-        rarity_regex = "|".join([f".*{r.strip()}.*" for r in rarity.split(",")])
-        query["rarity"] = {"$regex": rarity_regex, "$options": "i"}
+        rarities = [r.strip() for r in rarity.split(",")]
+        query["rarity"] = {"$in": rarities}
 
-    # 🔹 Pagination & sorting
+    # 🔹 Get total count for pagination
     total = cards_collection.count_documents(query)
+
+    # 🔹 Fetch paginated, sorted results
     cards = (
         cards_collection.find(query, {"_id": 0})
-        .sort("name", 1)  # sort alphabetically
+        .sort("name", 1)  # sort alphabetically by name
         .skip((page - 1) * limit)
         .limit(limit)
     )
