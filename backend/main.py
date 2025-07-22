@@ -47,7 +47,7 @@ def read_root():
     logger.info("📡 GET / called")
     return {"message": "Gundam Backend API is running."}
 
-from fastapi import Request
+from fastapi import Request, Query
 
 @app.get("/cards")
 def get_cards(

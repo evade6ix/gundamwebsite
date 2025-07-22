@@ -34,8 +34,10 @@ export default function Search() {
   }, []);
 
   useEffect(() => {
-  fetchCards(1);
-}, [query, selectedFilters]);
+  const pageNumber = parseInt(searchParams.get("page") || "1", 10);
+  fetchCards(pageNumber);
+}, [searchParams]);
+
 
 
   async function fetchCards(pageNumber = 1) {
@@ -75,7 +77,7 @@ export default function Search() {
     setSearchParams({ q: query, page: newPage });
   }
 
-  function toggleFilter(category, value) {
+ function toggleFilter(category, value) {
   const updatedFilters = { ...selectedFilters };
 
   if (updatedFilters[category].includes(value)) {
@@ -86,16 +88,17 @@ export default function Search() {
 
   setSelectedFilters(updatedFilters);
 
-  // Build searchParams including filters
+  // Build URLSearchParams including filters
   const params = new URLSearchParams();
   if (query) params.set("q", query);
-  params.set("page", 1); // reset to first page
+  params.set("page", 1); // Reset to first page
   if (updatedFilters.sets.length) params.set("set", updatedFilters.sets.join(","));
   if (updatedFilters.types.length) params.set("type", updatedFilters.types.join(","));
   if (updatedFilters.rarities.length) params.set("rarity", updatedFilters.rarities.join(","));
 
   setSearchParams(params);
 }
+
 
 
 
