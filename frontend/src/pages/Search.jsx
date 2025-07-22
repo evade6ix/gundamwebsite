@@ -76,19 +76,27 @@ export default function Search() {
   }
 
   function toggleFilter(category, value) {
-  setSelectedFilters((prev) => {
-    const updated = { ...prev };
-    if (updated[category].includes(value)) {
-      updated[category] = updated[category].filter((v) => v !== value);
-    } else {
-      updated[category] = [...updated[category], value];
-    }
-    return updated;
-  });
+  const updatedFilters = { ...selectedFilters };
 
-  setSearchParams({ q: query, page: 1 });
-  fetchCards(1); // 🔥 Force reload cards after filters change
+  if (updatedFilters[category].includes(value)) {
+    updatedFilters[category] = updatedFilters[category].filter((v) => v !== value);
+  } else {
+    updatedFilters[category] = [...updatedFilters[category], value];
+  }
+
+  setSelectedFilters(updatedFilters);
+
+  // Build searchParams including filters
+  const params = new URLSearchParams();
+  if (query) params.set("q", query);
+  params.set("page", 1); // reset to first page
+  if (updatedFilters.sets.length) params.set("set", updatedFilters.sets.join(","));
+  if (updatedFilters.types.length) params.set("type", updatedFilters.types.join(","));
+  if (updatedFilters.rarities.length) params.set("rarity", updatedFilters.rarities.join(","));
+
+  setSearchParams(params);
 }
+
 
 
 
