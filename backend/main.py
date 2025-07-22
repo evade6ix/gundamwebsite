@@ -50,15 +50,28 @@ def read_root():
 from fastapi import Request
 
 @app.get("/cards")
-def get_cards(request: Request, name: str = ""):
-    logger.info(f"📡 GET /cards called with name={name}")
+def get_cards(
+    request: Request,
+    name: str = "",
+    set: str = Query(None),
+    type: str = Query(None),
+    rarity: str = Query(None)
+):
+    logger.info(f"📡 GET /cards called with name={name}, set={set}, type={type}, rarity={rarity}")
     try:
         db = get_db()
         query = {}
+
         if name:
             query["name"] = {"$regex": name, "$options": "i"}
+        if set:
+            query["set.name"] = {"$in": [s.strip() for s in set.split(",")]}
+        if type:
+            query["cardType"] = {"$in": [t.strip() for t in type.split(",")]}
+        if rarity:
+            query["rarity"] = {"$in": [r.strip() for r in rarity.split(",")]}
 
-        # Pagination params
+        # Pagination
         page = int(request.query_params.get("page", 1))
         limit = int(request.query_params.get("limit", 30))
         skip = (page - 1) * limit
