@@ -97,6 +97,7 @@ const handleSearch = async (e, page = 1) => {
 
 
 
+
   const saveCollectionToDB = async (updatedCollection) => {
     try {
       const token = localStorage.getItem("token");
