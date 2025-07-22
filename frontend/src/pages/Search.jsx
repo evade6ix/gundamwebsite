@@ -85,8 +85,11 @@ export default function Search() {
     }
     return updated;
   });
+
   setSearchParams({ q: query, page: 1 });
+  fetchCards(1); // 🔥 Force reload cards after filters change
 }
+
 
 
   return (
@@ -147,27 +150,28 @@ export default function Search() {
         )}
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-          {cards.map((card) => (
-            <Link
-              key={card.id}
-              to={`/card/${card.id}`}
-              className="bg-white rounded-lg shadow hover:shadow-lg transition transform hover:-translate-y-1"
-            >
-              <img
-                src={card.image_url}
-                alt={card.name}
-                className="rounded-t-lg w-full h-60 object-contain p-2"
-                loading="lazy"
-              />
-              <div className="p-3">
-                <h2 className="font-semibold text-gray-800">{card.name}</h2>
-                <p className="text-sm text-gray-500">
-                  {card.rarity} • {card.color}
-                </p>
-              </div>
-            </Link>
-          ))}
-        </div>
+  {cards.map((card) => (
+    <Link
+      key={card.id}
+      to={`/card/${card.id}`}
+      className="bg-white rounded-lg shadow hover:shadow-lg transition transform hover:-translate-y-1"
+    >
+      <img
+        src={card.image_url}
+        alt={card.name}
+        className="rounded-t-lg w-full h-60 object-contain p-2"
+        loading="lazy"
+      />
+      <div className="p-3">
+        <h2 className="font-semibold text-gray-800">{card.name}</h2>
+        <p className="text-sm text-gray-500">
+          {card.rarity || "Unknown"} • {card.cardType || "N/A"} • {card.set?.name || "N/A"}
+        </p>
+      </div>
+    </Link>
+  ))}
+</div>
+
 
         {/* Pagination */}
         <div className="flex justify-center items-center gap-2 mt-10 flex-wrap">

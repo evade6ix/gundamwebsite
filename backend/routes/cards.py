@@ -35,9 +35,13 @@ def get_cards(
     if rarity:
         query["rarity"] = {"$in": rarity.split(",")}
 
+    # 🔹 Get total count for pagination
     total = cards_collection.count_documents(query)
+
+    # 🔹 Fetch paginated, sorted results
     cards = (
         cards_collection.find(query, {"_id": 0})
+        .sort("name", 1)  # sort alphabetically by name
         .skip((page - 1) * limit)
         .limit(limit)
     )
