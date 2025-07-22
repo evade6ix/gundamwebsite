@@ -33,10 +33,10 @@ export default function Search() {
     fetchFilters();
   }, []);
 
-  // 🟢 Fetch cards whenever query or filters change
   useEffect(() => {
-    fetchCards(page);
-  }, [query, page, selectedFilters]);
+  fetchCards(1);
+}, [query, selectedFilters]);
+
 
   async function fetchCards(pageNumber = 1) {
     setLoading(true);
@@ -76,16 +76,18 @@ export default function Search() {
   }
 
   function toggleFilter(category, value) {
-    setSelectedFilters((prev) => {
-      const updated = { ...prev };
-      if (updated[category].includes(value)) {
-        updated[category] = updated[category].filter((v) => v !== value);
-      } else {
-        updated[category] = [...updated[category], value];
-      }
-      return updated;
-    });
-  }
+  setSelectedFilters((prev) => {
+    const updated = { ...prev };
+    if (updated[category].includes(value)) {
+      updated[category] = updated[category].filter((v) => v !== value);
+    } else {
+      updated[category] = [...updated[category], value];
+    }
+    return updated;
+  });
+  setSearchParams({ q: query, page: 1 });
+}
+
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
