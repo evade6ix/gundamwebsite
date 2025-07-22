@@ -55,30 +55,47 @@ export default function Collection() {
     };
 
     fetchData();
-    handleSearch(); // 👈 Auto-load first page of all cards
-  }, [navigate]);
+handleSearch(); // 👈 Auto-load first page of all cards
+}, [navigate, showCollectionOnly]); // 👈 Also re-run when toggle changes
 
-  const handleSearch = async (e, page = 1) => {
-    if (e) e.preventDefault();
+const handleSearch = async (e, page = 1) => {
+  if (e) e.preventDefault();
 
-    try {
-      setLoading(true);
+  try {
+    setLoading(true);
 
-      const endpoint = query.trim()
-        ? `${import.meta.env.VITE_API_URL}/cards?name=${encodeURIComponent(query)}&page=${page}&limit=${CARDS_PER_PAGE}`
-        : `${import.meta.env.VITE_API_URL}/cards?page=${page}&limit=${CARDS_PER_PAGE}`;
+    let endpoint = `${import.meta.env.VITE_API_URL}/cards?page=${page}&limit=${CARDS_PER_PAGE}`;
 
-      const res = await fetch(endpoint);
-      const data = await res.json();
-      setSearchResults(data.cards || []);
-      setCurrentPage(data.page || 1);
-      setTotalPages(data.totalPages || 1);
-    } catch (err) {
-      console.error("Error fetching cards:", err);
-    } finally {
-      setLoading(false);
+    if (showCollectionOnly) {
+      const ids = Object.keys(collection).join(",");
+      if (ids) {
+        // New: request full details for all saved card IDs
+        endpoint = `${import.meta.env.VITE_API_URL}/cards?ids=${encodeURIComponent(ids)}`;
+      } else {
+        // No cards in collection
+        setSearchResults([]);
+        setCurrentPage(1);
+        setTotalPages(1);
+        setLoading(false);
+        return;
+      }
+    } else if (query.trim()) {
+      endpoint += `&name=${encodeURIComponent(query)}`;
     }
-  };
+
+    const res = await fetch(endpoint);
+    const data = await res.json();
+    setSearchResults(data.cards || []);
+    setCurrentPage(data.page || 1);
+    setTotalPages(data.totalPages || 1);
+  } catch (err) {
+    console.error("Error fetching cards:", err);
+  } finally {
+    setLoading(false);
+  }
+};
+
+
 
   const saveCollectionToDB = async (updatedCollection) => {
     try {
@@ -128,13 +145,7 @@ export default function Collection() {
     saveCollectionToDB(updatedCollection);
   };
 
-  const displayedCards = showCollectionOnly
-  ? Object.values(collection).map((c) => {
-      // Try to find full card details in searchResults
-      const fullCard = searchResults.find((card) => card.id === c.id);
-      return fullCard ? { ...fullCard, count: c.count } : c;
-    })
-  : searchResults;
+  const displayedCards = searchResults;
 
 
   if (loadingCollection) {

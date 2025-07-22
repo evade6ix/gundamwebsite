@@ -55,19 +55,33 @@ def get_cards(
     name: str = "",
     set: str = Query(None),
     type: str = Query(None),
-    rarity: str = Query(None)
+    rarity: str = Query(None),
+    ids: str = Query(None)  # 👈 Added support for ids
 ):
-    logger.info(f"📡 GET /cards called with name={name}, set={set}, type={type}, rarity={rarity}")
+    logger.info(f"📡 GET /cards called with name={name}, set={set}, type={type}, rarity={rarity}, ids={ids}")
     try:
         db = get_db()
         query = {}
 
+        # Filter by multiple card IDs
+        if ids:
+            id_list = [i.strip() for i in ids.split(",")]
+            query["id"] = {"$in": id_list}
+            logger.debug(f"🔎 Filtering by IDs: {id_list}")
+
+        # Filter by name
         if name:
             query["name"] = {"$regex": name, "$options": "i"}
+
+        # Filter by set(s)
         if set:
             query["set.name"] = {"$in": [s.strip() for s in set.split(",")]}
+
+        # Filter by type(s)
         if type:
             query["cardType"] = {"$in": [t.strip() for t in type.split(",")]}
+
+        # Filter by rarity(ies)
         if rarity:
             query["rarity"] = {"$in": [r.strip() for r in rarity.split(",")]}
 
@@ -80,12 +94,12 @@ def get_cards(
         cards_cursor = db.cards.find(query, {"_id": 0}).skip(skip).limit(limit)
         cards = list(cards_cursor)
 
-        # Flatten image URL
+        # Flatten image URL for frontend
         for card in cards:
             if "images" in card and "small" in card["images"]:
                 card["image_url"] = card["images"]["small"]
 
-        logger.debug(f"🔎 Page {page}/{(total + limit - 1) // limit} - Found {len(cards)} cards")
+        logger.debug(f"✅ Page {page}/{(total + limit - 1) // limit} - Found {len(cards)} cards")
         return {
             "cards": cards,
             "total": total,
@@ -95,6 +109,7 @@ def get_cards(
     except Exception as e:
         logger.error(f"❌ Error in /cards: {e}")
         return {"error": str(e)}
+
 
 
 @app.get("/card/{card_id}")
