@@ -160,7 +160,7 @@ export default function Search() {
           <p className="text-center text-lg text-gray-600">Loading cards...</p>
         )}
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
   {cards.map((card) => (
     <Link
       key={card.id}

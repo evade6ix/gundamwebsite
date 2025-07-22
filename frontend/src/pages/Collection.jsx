@@ -11,6 +11,7 @@ export default function Collection() {
   const [loading, setLoading] = useState(false);
   const [loadingCollection, setLoadingCollection] = useState(true);
   const [shareLink, setShareLink] = useState(null);
+  const [showCollectionOnly, setShowCollectionOnly] = useState(false);
 
   const CARDS_PER_PAGE = 20;
 
@@ -58,27 +59,26 @@ export default function Collection() {
   }, [navigate]);
 
   const handleSearch = async (e, page = 1) => {
-  if (e) e.preventDefault();
+    if (e) e.preventDefault();
 
-  try {
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    const endpoint = query.trim()
-      ? `${import.meta.env.VITE_API_URL}/cards?name=${encodeURIComponent(query)}&page=${page}&limit=${CARDS_PER_PAGE}`
-      : `${import.meta.env.VITE_API_URL}/cards?page=${page}&limit=${CARDS_PER_PAGE}`;
+      const endpoint = query.trim()
+        ? `${import.meta.env.VITE_API_URL}/cards?name=${encodeURIComponent(query)}&page=${page}&limit=${CARDS_PER_PAGE}`
+        : `${import.meta.env.VITE_API_URL}/cards?page=${page}&limit=${CARDS_PER_PAGE}`;
 
-    const res = await fetch(endpoint);
-    const data = await res.json();
-    setSearchResults(data.cards || []);
-    setCurrentPage(data.page || 1);
-    setTotalPages(data.totalPages || 1);
-  } catch (err) {
-    console.error("Error fetching cards:", err);
-  } finally {
-    setLoading(false);
-  }
-};
-
+      const res = await fetch(endpoint);
+      const data = await res.json();
+      setSearchResults(data.cards || []);
+      setCurrentPage(data.page || 1);
+      setTotalPages(data.totalPages || 1);
+    } catch (err) {
+      console.error("Error fetching cards:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const saveCollectionToDB = async (updatedCollection) => {
     try {
@@ -128,6 +128,11 @@ export default function Collection() {
     saveCollectionToDB(updatedCollection);
   };
 
+  // ✅ Filter search results if "showCollectionOnly" is ON
+  const displayedCards = showCollectionOnly
+    ? searchResults.filter((card) => collection[card.id])
+    : searchResults;
+
   if (loadingCollection) {
     return <p className="text-center mt-8">Loading your collection...</p>;
   }
@@ -156,6 +161,19 @@ export default function Collection() {
           </div>
         )}
 
+        {/* Toggle Button + Disclaimer */}
+        <div className="flex items-center gap-4 mb-4">
+          <button
+            onClick={() => setShowCollectionOnly(!showCollectionOnly)}
+            className={`px-4 py-2 rounded ${
+              showCollectionOnly ? "bg-green-600 text-white" : "bg-gray-300 text-gray-800"
+            }`}
+          >
+            {showCollectionOnly ? "Showing: My Collection" : "Showing: All Cards"}
+          </button>
+          <p className="text-gray-500">Click a card to add it to your collection.</p>
+        </div>
+
         {/* Search */}
         <form onSubmit={handleSearch} className="flex gap-2 mb-4">
           <input
@@ -174,64 +192,65 @@ export default function Collection() {
         </form>
 
         {/* Search Results */}
-{loading ? (
-  <p className="text-gray-500">Loading cards...</p>
-) : (
-  <div className="grid grid-cols-5 gap-6">
-    {searchResults.map((card) => (
-      <div
-        key={card.id}
-        className="p-4 border rounded-lg hover:shadow-lg transition-transform transform hover:scale-105"
-      >
-        <img
-          src={card.images?.small || card.image_url || "/placeholder.png"}
-          alt={card.name}
-          className="w-full h-60 object-contain rounded-lg mb-3 cursor-pointer"
-          onClick={() => addToCollection(card)}
-        />
-        <div>
-          <h3 className="text-xl font-semibold">{card.name}</h3>
-          <p className="text-gray-600 text-base">
-            {card.set?.name || card.set_name} / {card.cardType || "Unknown"} / {card.rarity || "N/A"}
-          </p>
-          {collection[card.id] && (
-            <>
-              <p className="text-gray-800 text-base mt-2">
-                Copies: {collection[card.id].count}
-              </p>
-              <button
-                onClick={() => removeFromCollection(card.id)}
-                className="mt-3 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+        {loading ? (
+          <p className="text-gray-500">Loading cards...</p>
+        ) : (
+          <div className="grid grid-cols-5 gap-6">
+            {displayedCards.map((card) => (
+              <div
+                key={card.id}
+                className="p-4 border rounded-lg hover:shadow-lg transition-transform transform hover:scale-105"
               >
-                Remove
-              </button>
-            </>
-          )}
-        </div>
-      </div>
-    ))}
-  </div>
-)}
-
+                <img
+                  src={card.images?.small || card.image_url || "/placeholder.png"}
+                  alt={card.name}
+                  className="w-full h-60 object-contain rounded-lg mb-3 cursor-pointer"
+                  onClick={() => addToCollection(card)}
+                />
+                <div>
+                  <h3 className="text-xl font-semibold">{card.name}</h3>
+                  <p className="text-gray-600 text-base">
+                    {card.set?.name || card.set_name} / {card.cardType || "Unknown"} / {card.rarity || "N/A"}
+                  </p>
+                  {collection[card.id] && (
+                    <>
+                      <p className="text-gray-800 text-base mt-2">
+                        Copies: {collection[card.id].count}
+                      </p>
+                      <button
+                        onClick={() => removeFromCollection(card.id)}
+                        className="mt-3 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+                      >
+                        Remove
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Pagination */}
-        <div className="flex justify-between items-center mt-4">
-          <button
-            disabled={currentPage === 1}
-            onClick={(e) => handleSearch(e, currentPage - 1)}
-            className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
-          >
-            ← Prev
-          </button>
-          <span className="text-gray-600">Page {currentPage} of {totalPages}</span>
-          <button
-            disabled={currentPage === totalPages}
-            onClick={(e) => handleSearch(e, currentPage + 1)}
-            className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
-          >
-            Next →
-          </button>
-        </div>
+        {!showCollectionOnly && (
+          <div className="flex justify-between items-center mt-4">
+            <button
+              disabled={currentPage === 1}
+              onClick={(e) => handleSearch(e, currentPage - 1)}
+              className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
+            >
+              ← Prev
+            </button>
+            <span className="text-gray-600">Page {currentPage} of {totalPages}</span>
+            <button
+              disabled={currentPage === totalPages}
+              onClick={(e) => handleSearch(e, currentPage + 1)}
+              className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
+            >
+              Next →
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
