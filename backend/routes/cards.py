@@ -17,31 +17,34 @@ def get_cards(
     page: int = 1,
     limit: int = 20
 ):
+    # 🔹 Build MongoDB query
     query = {}
 
-    # 🔹 Search by name (case-insensitive partial match)
     if name:
         query["name"] = {"$regex": name, "$options": "i"}
 
-    # 🔹 Filter by set(s)
     if set:
-        query["set.name"] = {"$in": set.split(",")}
+        sets = [s.strip() for s in set.split(",")]
+        query["set.name"] = {"$in": sets}
 
-    # 🔹 Filter by type(s)
     if type:
-        query["cardType"] = {"$in": type.split(",")}
+        types = [t.strip() for t in type.split(",")]
+        query["cardType"] = {"$in": types}
 
-    # 🔹 Filter by rarity(ies)
     if rarity:
-        query["rarity"] = {"$in": rarity.split(",")}
+        rarities = [r.strip() for r in rarity.split(",")]
+        query["rarity"] = {"$in": rarities}
 
-    # 🔹 Get total count for pagination
+    # Debug: log the query
+    print("MongoDB Query:", query)
+
+    # 🔹 Get total count
     total = cards_collection.count_documents(query)
 
-    # 🔹 Fetch paginated, sorted results
+    # 🔹 Fetch paginated & sorted results
     cards = (
         cards_collection.find(query, {"_id": 0})
-        .sort("name", 1)  # sort alphabetically by name
+        .sort("name", 1)
         .skip((page - 1) * limit)
         .limit(limit)
     )
