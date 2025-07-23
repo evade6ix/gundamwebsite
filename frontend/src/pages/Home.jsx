@@ -22,10 +22,10 @@ export default function Home() {
       {/* Hero Section */}
       <header className="w-full text-center py-20">
         <h1 className="text-5xl md:text-6xl font-extrabold mb-4">
-          Gundam TCG Hub
+          Gundam DB: By Game 3 TCG
         </h1>
         <p className="text-lg md:text-xl text-gray-600 mb-12">
-          Build decks, share collections, and explore all Gundam TCG cards in one place.
+          Build decks, Share your Collection & Discover all Gundam TCG cards in one place.
         </p>
 
         {/* Showcase Cards */}
@@ -169,7 +169,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="mt-auto py-6 text-center text-sm text-gray-400 border-t">
-        &copy; {new Date().getFullYear()} Karl @ Game 3 INC. All rights reserved.
+        &copy; {new Date().getFullYear()} Karl & Game 3 INC. All rights reserved.
       </footer>
     </div>
   );
