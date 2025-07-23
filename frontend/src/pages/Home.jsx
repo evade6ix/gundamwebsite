@@ -18,18 +18,86 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50 text-gray-900">
+    <div className="flex flex-col min-h-screen bg-gradient-to-b from-gray-50 via-white to-gray-100 text-gray-900">
       {/* Hero Section */}
-      <header className="w-full text-center py-20">
-        <h1 className="text-5xl md:text-6xl font-extrabold mb-4">
-          Gundam TCG Hub
-        </h1>
-        <p className="text-lg md:text-xl text-gray-600 mb-12">
-          Build decks, share collections, and explore all Gundam TCG cards in one place.
-        </p>
+      <header className="w-full text-center py-28 px-4 relative overflow-hidden bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white">
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-5xl md:text-7xl font-extrabold mb-6 drop-shadow-lg">
+            The Ultimate Gundam TCG Platform
+          </h1>
+          <p className="text-xl md:text-2xl mb-8 font-light drop-shadow-md">
+            Manage your collection. Build winning decks. Connect with the Gundam community—all in one place.
+          </p>
+          <div className="flex justify-center gap-4">
+            <Link
+              to="/register"
+              className="px-8 py-3 rounded-xl bg-white text-indigo-600 font-semibold shadow-lg hover:bg-gray-100 transition duration-300"
+            >
+              Get Started Free
+            </Link>
+            <Link
+              to="/search"
+              className="px-8 py-3 rounded-xl border border-white text-white font-semibold hover:bg-white hover:text-indigo-600 transition duration-300"
+            >
+              Live Demo
+            </Link>
+          </div>
+        </div>
 
-        {/* Showcase Cards */}
-        <div className="flex justify-center gap-6 mb-12 flex-wrap">
+        {/* Animated Mockup Illustration */}
+        <div className="absolute inset-x-0 bottom-0 flex justify-center mt-10">
+          <img
+            src="/images/mockup.gif"
+            alt="App Mockup Animation"
+            className="w-full max-w-3xl rounded-xl shadow-2xl"
+          />
+        </div>
+      </header>
+
+      {/* Dynamic Feature Section */}
+      <section className="max-w-7xl mx-auto py-20 px-6">
+        <h2 className="text-4xl font-bold text-center mb-12">Why Choose GundamDatabase?</h2>
+
+        {/* Icon Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+          <div className="p-6 bg-white rounded-xl shadow hover:shadow-lg transition">
+            <div className="text-5xl mb-4">📦</div>
+            <h3 className="text-2xl font-semibold mb-2">All-in-One Hub</h3>
+            <p className="text-gray-600">Deck builder, collection tracker, and card explorer—all seamlessly connected.</p>
+          </div>
+          <div className="p-6 bg-white rounded-xl shadow hover:shadow-lg transition">
+            <div className="text-5xl mb-4">⚡</div>
+            <h3 className="text-2xl font-semibold mb-2">Lightning Fast</h3>
+            <p className="text-gray-600">Blazing fast search and real-time updates for your cards and decks.</p>
+          </div>
+          <div className="p-6 bg-white rounded-xl shadow hover:shadow-lg transition">
+            <div className="text-5xl mb-4">🌐</div>
+            <h3 className="text-2xl font-semibold mb-2">Community Ready</h3>
+            <p className="text-gray-600">Easily share your collection and decks with friends or the wider community.</p>
+          </div>
+        </div>
+
+        {/* Step Cards */}
+        <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="p-6 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-xl shadow">
+            <h4 className="text-xl font-bold mb-2">Step 1: Create Account</h4>
+            <p className="text-gray-700">Sign up free and set up your profile in seconds.</p>
+          </div>
+          <div className="p-6 bg-gradient-to-br from-pink-50 to-pink-100 rounded-xl shadow">
+            <h4 className="text-xl font-bold mb-2">Step 2: Build Your Collection</h4>
+            <p className="text-gray-700">Track your cards and organize them into decks.</p>
+          </div>
+          <div className="p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl shadow">
+            <h4 className="text-xl font-bold mb-2">Step 3: Share & Compete</h4>
+            <p className="text-gray-700">Show off your decks and get ready for tournaments.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Showcase Cards (Animated) */}
+      <section className="bg-gray-50 py-16">
+        <h3 className="text-3xl font-bold text-center mb-8">Featured Gundam Cards</h3>
+        <div className="flex justify-center gap-6 flex-wrap">
           {cards.length > 0 ? (
             cards.map((card) => (
               <Link
@@ -40,7 +108,7 @@ export default function Home() {
                 <img
                   src={card.image_url}
                   alt={card.name}
-                  className="w-40 md:w-48 rounded-lg shadow-lg"
+                  className="w-44 md:w-52 rounded-xl shadow-lg border border-gray-200"
                   loading="lazy"
                 />
               </Link>
@@ -49,127 +117,11 @@ export default function Home() {
             <p className="text-gray-500">Loading cards...</p>
           )}
         </div>
-
-        {/* Call to Action Button */}
-        <Link
-          to="/search"
-          className="px-6 py-3 rounded-lg bg-teal-600 text-white font-semibold shadow hover:bg-teal-700 transition duration-300"
-        >
-          Start Searching
-        </Link>
-      </header>
-
-      {/* Feature Blocks */}
-      <section className="bg-white">
-        {/* Profile Page */}
-        <div className="flex flex-col md:flex-row items-center max-w-6xl mx-auto py-16 px-6">
-          <img
-            src="/images/one.PNG"
-            alt="Profile Page"
-            className="w-full md:w-1/2 rounded-xl shadow-lg mb-8 md:mb-0 md:mr-8"
-          />
-          <div>
-            <h2 className="text-3xl font-bold mb-4">Profile Page</h2>
-            <p className="text-gray-700 mb-4">
-              Manage all your decks in one place with an intuitive interface that’s designed for TCG enthusiasts.
-            </p>
-            <Link
-              to="/account"
-              className="inline-block px-5 py-2 bg-teal-600 text-white rounded-lg shadow hover:bg-teal-700 transition"
-            >
-              View Profile
-            </Link>
-          </div>
-        </div>
-
-        {/* Deck View */}
-        <div className="flex flex-col md:flex-row-reverse items-center max-w-6xl mx-auto py-16 px-6 bg-gray-50">
-          <img
-            src="/images/two.PNG"
-            alt="Deck View"
-            className="w-full md:w-1/2 rounded-xl shadow-lg mb-8 md:mb-0 md:ml-8"
-          />
-          <div>
-            <h2 className="text-3xl font-bold mb-4">Deck View</h2>
-            <p className="text-gray-700 mb-4">
-              Dive into deck details and analyze your card strategy with powerful tools and clean layouts.
-            </p>
-            <Link
-              to="/account"
-              className="inline-block px-5 py-2 bg-teal-600 text-white rounded-lg shadow hover:bg-teal-700 transition"
-            >
-              Browse Decks
-            </Link>
-          </div>
-        </div>
-
-        {/* Collection */}
-        <div className="flex flex-col md:flex-row items-center max-w-6xl mx-auto py-16 px-6">
-          <img
-            src="/images/three.PNG"
-            alt="Collection"
-            className="w-full md:w-1/2 rounded-xl shadow-lg mb-8 md:mb-0 md:mr-8"
-          />
-          <div>
-            <h2 className="text-3xl font-bold mb-4">Collection</h2>
-            <p className="text-gray-700 mb-4">
-              Track every Gundam TCG card you own. Build your dream collection and access it anytime.
-            </p>
-            <Link
-              to="/collection"
-              className="inline-block px-5 py-2 bg-teal-600 text-white rounded-lg shadow hover:bg-teal-700 transition"
-            >
-              Start Your Collection
-            </Link>
-          </div>
-        </div>
-
-        {/* Shared Collection */}
-        <div className="flex flex-col md:flex-row-reverse items-center max-w-6xl mx-auto py-16 px-6 bg-gray-50">
-          <img
-            src="/images/four.PNG"
-            alt="Shared Collection"
-            className="w-full md:w-1/2 rounded-xl shadow-lg mb-8 md:mb-0 md:ml-8"
-          />
-          <div>
-            <h2 className="text-3xl font-bold mb-4">Shared Collection</h2>
-            <p className="text-gray-700 mb-4">
-              Showcase your collection to friends and community members with a simple shareable link.
-            </p>
-            <Link
-              to="/collection"
-              className="inline-block px-5 py-2 bg-teal-600 text-white rounded-lg shadow hover:bg-teal-700 transition"
-            >
-              Share Your Collection
-            </Link>
-          </div>
-        </div>
-
-        {/* Deck Editor */}
-        <div className="flex flex-col md:flex-row items-center max-w-6xl mx-auto py-16 px-6">
-          <img
-            src="/images/five.PNG"
-            alt="Deck Editor"
-            className="w-full md:w-1/2 rounded-xl shadow-lg mb-8 md:mb-0 md:mr-8"
-          />
-          <div>
-            <h2 className="text-3xl font-bold mb-4">Deck Editor</h2>
-            <p className="text-gray-700 mb-4">
-              Create and edit powerful decks on the fly. Perfect for testing strategies and preparing for tournaments.
-            </p>
-            <Link
-              to="/decks/new"
-              className="inline-block px-5 py-2 bg-teal-600 text-white rounded-lg shadow hover:bg-teal-700 transition"
-            >
-              Open Deck Editor
-            </Link>
-          </div>
-        </div>
       </section>
 
       {/* Footer */}
-      <footer className="mt-auto py-6 text-center text-sm text-gray-400 border-t">
-        &copy; {new Date().getFullYear()} Karl @ Game 3 INC. All rights reserved.
+      <footer className="mt-auto py-8 text-center text-gray-500 text-sm border-t">
+        &copy; {new Date().getFullYear()} GundamDatabase. All rights reserved.
       </footer>
     </div>
   );
